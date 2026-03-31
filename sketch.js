@@ -18,31 +18,37 @@ const INTRO_NORMAL_F = 60;
 const INTRO_SHAKE_F  = 30;
 const INTRO_FLASH_F  = 24;
 
-const RAIN_COUNT = 50;
-const MOTE_COUNT = 15;
+const RAIN_COUNT = 200;
+const MOTE_COUNT = 55;
 
 const COYOTE_FRAMES     = 7;
 const JUMP_CUT_MULT     = 0.42;
 const DOUBLE_JUMP_FORCE = -10;
 
 const LIGHT_SOURCES = [
-  { x: 200,  y: 0, w: 300, h: 450, phase: 0.0,  speed: 0.038 },
-  { x: 850,  y: 0, w: 240, h: 450, phase: 2.1,  speed: 0.055 },
-  { x: 1480, y: 0, w: 320, h: 450, phase: 1.4,  speed: 0.031 },
-  { x: 2200, y: 0, w: 260, h: 450, phase: 0.7,  speed: 0.048 },
-  { x: 3000, y: 0, w: 280, h: 450, phase: 1.9,  speed: 0.042 },
-  { x: 3800, y: 0, w: 350, h: 450, phase: 0.3,  speed: 0.036 },
+  { x: 200,  y: 0, w: 300, h: 450, phase: 0.0,  speed: 0.072 },
+  { x: 580,  y: 0, w: 180, h: 450, phase: 3.3,  speed: 0.095 },
+  { x: 850,  y: 0, w: 240, h: 450, phase: 2.1,  speed: 0.085 },
+  { x: 1200, y: 0, w: 200, h: 450, phase: 1.1,  speed: 0.110 },
+  { x: 1480, y: 0, w: 320, h: 450, phase: 1.4,  speed: 0.062 },
+  { x: 1900, y: 0, w: 160, h: 450, phase: 4.2,  speed: 0.130 },
+  { x: 2200, y: 0, w: 260, h: 450, phase: 0.7,  speed: 0.088 },
+  { x: 2650, y: 0, w: 220, h: 450, phase: 2.8,  speed: 0.105 },
+  { x: 3000, y: 0, w: 280, h: 450, phase: 1.9,  speed: 0.078 },
+  { x: 3400, y: 0, w: 190, h: 450, phase: 0.5,  speed: 0.120 },
+  { x: 3800, y: 0, w: 350, h: 450, phase: 0.3,  speed: 0.065 },
+  { x: 4300, y: 0, w: 240, h: 450, phase: 1.7,  speed: 0.098 },
 ];
 
 const GLARE_ZONES = [
-  { x: 700,  w: 350, intensity: 1.4 },
-  { x: 2600, w: 600, intensity: 3.0 },
-  { x: 3800, w: 900, intensity: 3.8 },
+  { x: 700,  w: 350, intensity: 3.2 },
+  { x: 2600, w: 600, intensity: 6.5 },
+  { x: 3800, w: 900, intensity: 9.0 },
 ];
 
 const DARK_ZONES = [
-  { x: 1700, w: 450, intensity: 0.72 },
-  { x: 4050, w: 350, intensity: 0.82 },
+  { x: 1700, w: 450, intensity: 0.96 },
+  { x: 4050, w: 350, intensity: 0.98 },
 ];
 
 const WIN_BTN = { x: 310, y: 378, w: 180, h: 40 };
@@ -307,12 +313,12 @@ function initParticles() {
   motes = [];
   for (let i = 0; i < RAIN_COUNT; i++) {
     rain.push({ x: random(width + 40), y: random(-20, height),
-                speed: random(5, 9), len: random(12, 22), alpha: random(15, 40) });
+                speed: random(5, 9), len: random(12, 22), alpha: random(55, 110) });
   }
   for (let i = 0; i < MOTE_COUNT; i++) {
     motes.push({ x: random(width), y: random(height),
-                 vx: random(-0.3, 0.3), vy: random(-0.6, -0.15),
-                 size: random(1.5, 3), alpha: random(60, 160), pink: random() > 0.6 });
+                 vx: random(-0.5, 0.5), vy: random(-0.9, -0.15),
+                 size: random(1.5, 4), alpha: random(100, 210), pink: random() > 0.5 });
   }
 }
 
@@ -333,7 +339,7 @@ function draw() {
     drawGoal(); drawEnemies();
     pop();
     updateParticles(); drawParticles();
-    drawScanlines(); drawVignette();
+    drawNoise(); drawScanlines(); drawVignette();
     let portalSX = goal.x + goal.w / 2 - camX;
     let portalSY = goal.y + goal.h / 2;
     let r    = map(winTimer, 0, 28, 0, dist(0, 0, width, height) * 1.1);
@@ -413,6 +419,7 @@ function draw() {
   }
 
   drawDangerWarning();
+  drawNoise();
   drawScanlines();
   drawVignette();
   drawHUD();
@@ -832,7 +839,7 @@ function updateCamera() {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function drawParallax(lowVis) {
-  let dim = lowVis ? 0.52 : 0.95;
+  let dim = lowVis ? 0.14 : 0.95;
   let off1 = camX * 0.08;
   for (let b of bgLayer1) {
     let sx = b.x - off1;
@@ -886,7 +893,7 @@ function drawParticles() {
 function drawLights() {
   noStroke();
   for (let l of LIGHT_SOURCES) {
-    let a = map(sin(frameCount * l.speed + l.phase), -1, 1, 40, 130);
+    let a = map(sin(frameCount * l.speed + l.phase), -1, 1, 70, 220);
     fill(255, 245, 210, a); rect(l.x, l.y, l.w, l.h);
   }
 }
@@ -969,7 +976,7 @@ function drawPlatforms() {
   for (let p of platforms) {
     if (p.x + p.w < vL || p.x > vR) continue;
     let hi = (focusFade > 0 && distToRect(pcx, pcy, p.x, p.y, p.w, p.h) <= FOCUS_RADIUS) ? focusFade : 0;
-    drawPlatformNeon(p, lerp(lerp(0.45, 0.98, visionFloor()), 1.0, hi), hi);
+    drawPlatformNeon(p, lerp(lerp(0.05, 0.13, visionFloor()), 1.0, hi), hi);
   }
   noStroke();
 }
@@ -978,7 +985,7 @@ function drawMovingPlatforms() {
   let pcx = player.x + player.w / 2, pcy = player.y + player.h / 2;
   for (let mp of movingPlatforms) {
     let hi = (focusFade > 0 && distToRect(pcx, pcy, mp.x, mp.y, mp.w, mp.h) <= FOCUS_RADIUS) ? focusFade : 0;
-    drawMovingPlatformNeon(mp, lerp(lerp(0.45, 0.98, visionFloor()), 1.0, hi), hi);
+    drawMovingPlatformNeon(mp, lerp(lerp(0.05, 0.13, visionFloor()), 1.0, hi), hi);
   }
   noStroke();
 }
@@ -1060,7 +1067,7 @@ function drawEnemies() {
   for (let e of enemies) {
     if (e.x + e.w < vL || e.x > vR) continue;
     let hi = (focusFade > 0 && distToRect(pcx, pcy, e.x, e.y, e.w, e.h) <= FOCUS_RADIUS) ? focusFade : 0;
-    drawEnemyNeon(e, lerp(lerp(0.70, 0.98, visionFloor()), 1.0, hi), hi);
+    drawEnemyNeon(e, lerp(lerp(0.04, 0.10, visionFloor()), 1.0, hi), hi);
   }
 }
 
@@ -1074,7 +1081,7 @@ function drawSpikes() {
   for (let s of spikes) {
     if (s.x + s.w < vL || s.x > vR) continue;
     let hi = (focusFade > 0 && distToRect(pcx, pcy, s.x, s.y, s.w, s.h) <= FOCUS_RADIUS) ? focusFade : 0;
-    let a  = lerp(0.45, 1.0, hi);
+    let a  = lerp(0.04, 1.0, hi);
     let cx = s.x + s.w / 2;
     noStroke();
     fill(255, 80, 40, 22 * a); triangle(cx, s.y - 2, s.x - 2, s.y + s.h + 2, s.x + s.w + 2, s.y + s.h + 2);
@@ -1094,7 +1101,7 @@ function drawLasers() {
     let cycle = (frameCount + l.phase) % LASER_CYCLE;
     let isOn  = cycle < LASER_CYCLE * LASER_ON_FRAC;
     let hi    = (focusFade > 0 && distToRect(pcx, pcy, l.x, l.y, l.w, l.h) <= FOCUS_RADIUS) ? focusFade : 0;
-    let vis   = lerp(0.45, 1.0, hi);
+    let vis   = lerp(0.06, 1.0, hi);
     if (isOn) {
       let flicker = 0.7 + 0.3 * sin(frameCount * 0.5);
       noStroke();
@@ -1183,7 +1190,7 @@ function drawGoalNeon(a, hi) {
 function drawGoal() {
   let pcx = player.x + player.w / 2, pcy = player.y + player.h / 2;
   let hi = (focusFade > 0 && distToRect(pcx, pcy, goal.x, goal.y, goal.w, goal.h) <= FOCUS_RADIUS) ? focusFade : 0;
-  drawGoalNeon(lerp(0.45, 1.0, hi), hi);
+  drawGoalNeon(lerp(0.20, 1.0, hi), hi);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1270,6 +1277,26 @@ function drawHUD() {
 //  VISUAL — Screen-space overlays
 // ═══════════════════════════════════════════════════════════════════════════════
 
+function drawNoise() {
+  let ctx = drawingContext;
+  // Digital static — random bright specks that overwhelm the mid-ground
+  for (let i = 0; i < 220; i++) {
+    let nx = random(width), ny = random(height);
+    let na = random(6, 28);
+    let hue = random() > 0.55 ? "0,200,255" : "200,50,255";
+    ctx.fillStyle = "rgba(" + hue + "," + (na / 255).toFixed(3) + ")";
+    ctx.fillRect(nx | 0, ny | 0, (random(1, 4)) | 0, 1);
+  }
+  // Horizontal interference bands — brief flickers of white-ish noise
+  for (let i = 0; i < 6; i++) {
+    if (random() < 0.18) {
+      let by = random(height), bh = random(1, 3);
+      ctx.fillStyle = "rgba(160,200,255," + random(0.015, 0.055).toFixed(3) + ")";
+      ctx.fillRect(0, by | 0, width, bh | 0);
+    }
+  }
+}
+
 function drawScanlines() {
   let ctx = drawingContext;
   ctx.fillStyle = "rgba(0,0,0,0.025)";
@@ -1280,8 +1307,8 @@ function drawVignette() {
   let ctx = drawingContext;
   let g = ctx.createRadialGradient(width / 2, height / 2, height * 0.1, width / 2, height / 2, height * 0.82);
   g.addColorStop(0,   "rgba(0,0,0,0)");
-  g.addColorStop(0.6, "rgba(0,0,0,0.22)");
-  g.addColorStop(1,   "rgba(0,0,0,0.60)");
+  g.addColorStop(0.45, "rgba(0,0,0,0.35)");
+  g.addColorStop(1,   "rgba(0,0,0,0.88)");
   ctx.fillStyle = g; ctx.fillRect(0, 0, width, height);
 }
 
