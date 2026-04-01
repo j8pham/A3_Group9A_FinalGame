@@ -187,7 +187,10 @@ const LEVEL2_PLATFORMS = [
 
 const LEVEL2_WALLS = []; // no wall in Level 2
 
-const LEVEL2_MOVING_PLATFORMS = []; // no moving platforms in Level 2
+const LEVEL2_MOVING_PLATFORMS = [
+  // Bridges 222px Zone C gap between P6 (right edge x:2153) and P7 (left edge x:2375)
+  { x: 2264, y: 265, w: 90, h: 14, speed: 1.1, axis: "x", origin: 2264, range: 111, dx: 0, dy: 0 },
+];
 
 const LEVEL2_ENEMIES = [
   // A — intro: slow, short patrol on P4
@@ -224,6 +227,103 @@ const LEVEL2_CHECKPOINTS = [
 // Vision pickup on laser platform P10 — gives brief clarity mid-gauntlet
 const LEVEL2_VISION_PICKUP = { x: 3300, y: 217, w: 16, h: 16 };
 
+// ── LEVEL 3 DATA — "The Infiltration" ────────────────────────────────────────
+//  Zone A (0–940):     Intro — familiar hops, then first REQUIRED moving platform.
+//  Zone B (940–1840):  Dark spike trap + enemy A (medium speed).
+//  Zone C (1840–2900): Near-invisible platforms, enemy B (fast), 2nd moving platform.
+//  Zone D (2900–3840): 4-laser gauntlet (hardest), vision pickup mid-run, enemy C.
+//  Zone E (3840–4200): Two checkpoints bracket the danger; finish drops to ground.
+
+const LEVEL3_PLATFORMS = [
+  // Zone A — comfortable warmup before first moving-platform gap
+  { x: 0,    y: 400, w: 340, h: 50 }, // P0 - start ground
+  { x: 420,  y: 376, w: 155, h: 20 }, // P1 - first hop
+  { x: 648,  y: 356, w: 172, h: 20 }, // P2 - second hop
+  { x: 926,  y: 336, w: 148, h: 20 }, // P3 - run-up before 236px gap → moving plat required
+  { x: 1310, y: 316, w: 158, h: 20 }, // P4 - landing after moving platform
+  // Zone B — dark, spike trap, first enemy
+  { x: 1568, y: 295, w: 210, h: 20 }, // P5 - SPIKE PLATFORM wider (dark zone, scan required)
+  { x: 1844, y: 276, w: 192, h: 20 }, // P6 - enemy A patrol
+  // Zone C — near-invisible + second moving-platform gap
+  { x: 2148, y: 258, w: 156, h: 20 }, // P7 - near-invisible approach
+  { x: 2406, y: 242, w: 164, h: 20 }, // P8 - checkpoint 1
+  { x: 2678, y: 228, w: 148, h: 20 }, // P9 - enemy B + run-up before 224px gap
+  // Zone D — laser gauntlet
+  { x: 3050, y: 214, w: 172, h: 20 }, // P10 - laser approach (after 2nd moving plat)
+  { x: 3300, y: 205, w: 476, h: 20 }, // P11 - laser main (4 lasers above, vision pickup)
+  { x: 3848, y: 218, w: 192, h: 20 }, // P12 - checkpoint 2 + enemy C
+  // Zone E — finish
+  { x: 4000, y: 370, w: 180, h: 50 }, // P13 - finish, drops to ground
+];
+
+const LEVEL3_WALLS = []; // no wall obstacles in Level 3
+
+// Two horizontal moving platforms — each bridges an uncrossable gap
+const LEVEL3_MOVING_PLATFORMS = [
+  // MP1: shuttles across 236px gap between P3 (right: 1074) and P4 (left: 1310)
+  // x oscillates: 1192±118 → 1074 … 1310; w=90 ensures overlap on both ends
+  { x: 1192, y: 320, w: 90, h: 14, speed: 1.3, axis: "x", origin: 1192, range: 118, dx: 0, dy: 0 },
+  // MP2: shuttles across 224px gap between P9 (right: 2826) and P10 (left: 3050)
+  // x oscillates: 2938±112 → 2826 … 3050; faster than MP1 — harder timing
+  { x: 2938, y: 208, w: 90, h: 14, speed: 1.7, axis: "x", origin: 2938, range: 112, dx: 0, dy: 0 },
+];
+
+const LEVEL3_ENEMIES = [
+  // A — medium speed on P6
+  { x: 1844, y: 246, w: 22, h: 30, speed: 1.25, dir: 1, leftBound: 1844, rightBound: 2014, startX: 1844, startDir: 1 },
+  // B — fast on P9 (near-invisible zone)
+  { x: 2678, y: 198, w: 22, h: 30, speed: 1.65, dir: 1, leftBound: 2678, rightBound: 2804, startX: 2678, startDir: 1 },
+  // C — medium on P12 (after lasers, before finish)
+  { x: 3848, y: 188, w: 22, h: 30, speed: 1.15, dir: 1, leftBound: 3848, rightBound: 4018, startX: 3848, startDir: 1 },
+];
+
+// 5 spikes across the wider P5 (platform x:1568, y:295 → spike y:281); 3 hidden in laser zone P11
+const LEVEL3_SPIKES = [
+  // Zone B — 5 spikes spanning wider P5, encourages double-jumping over
+  { x: 1597, y: 281, w: 16, h: 14 },
+  { x: 1615, y: 281, w: 16, h: 14 },
+  { x: 1633, y: 281, w: 16, h: 14 },
+  { x: 1651, y: 281, w: 16, h: 14 },
+  { x: 1669, y: 281, w: 16, h: 14 },
+  // Zone D — 3 spikes hidden on P11 (platform y:205 → spike y:191), interspersed with lasers
+  { x: 3340, y: 191, w: 16, h: 14 },
+  { x: 3460, y: 191, w: 16, h: 14 },
+  { x: 3580, y: 191, w: 16, h: 14 },
+];
+
+// Four lasers above P11 — 55px clearance; player must walk, not jump, beneath them
+// Laser y = 205 − 55 = 150; phases staggered so at least one is always on
+const LEVEL3_LASERS = [
+  { x: 3315, y: 150, w: 100, h: 4, phase: 0   },
+  { x: 3430, y: 150, w: 100, h: 4, phase: 45  },
+  { x: 3545, y: 150, w: 100, h: 4, phase: 90  },
+  { x: 3660, y: 150, w: 100, h: 4, phase: 135 },
+];
+
+// Goal centred on finish platform P13 (x:4000, y:370, w:180)
+const LEVEL3_GOAL = { x: 4072, y: 318, w: 36, h: 52 };
+
+// CP1 on P8 (x:2406, y:242); CP2 on P12 (x:3848, y:218)
+const LEVEL3_CHECKPOINTS = [
+  { x: 2479, y: 202, w: 18, h: 40 },
+  { x: 3937, y: 178, w: 18, h: 40 },
+];
+
+// Vision pickup mid-laser-platform — reward for scanning at the hardest moment
+const LEVEL3_VISION_PICKUP = { x: 3530, y: 189, w: 16, h: 16 };
+
+// Glare and dark zones tuned for Level 3 layout
+const LEVEL3_GLARE_ZONES = [
+  { x: 1820, w: 260, intensity: 3.8 },  // Zone B — enemy A section
+  { x: 2400, w: 360, intensity: 7.0 },  // Zone C — near-invisible platforms
+  { x: 3280, w: 640, intensity: 10.5 }, // Zone D — 4-laser gauntlet
+];
+const LEVEL3_DARK_ZONES = [
+  { x: 1440, w: 440, intensity: 0.92 }, // Zone B — spike platform darkness
+  { x: 2100, w: 520, intensity: 0.97 }, // Zone C — near-invisible platform zone
+  { x: 2960, w: 420, intensity: 0.95 }, // Zone D — laser approach
+];
+
 const VISION_BOOST_FRAMES = 300;
 const VISION_FADE_FRAMES  = 60;
 const DARK_WALL_SPEED     = 1.2;
@@ -233,6 +333,7 @@ let buildingImgs = [];
 let jamieIdle    = [];
 let jamieRun     = [];
 let jamieJump    = [];
+let spikeImgs    = []; // [Spike_1_Sprite, Spike_2_Sprite] — 2 variants for visual variety
 let bgMusic;
 let sfxJump, sfxDoubleJump, sfxFocus, sfxDeath, sfxGoal;
 
@@ -244,6 +345,7 @@ function preload() {
   for (let i = 1; i <= 3; i++) jamieIdle.push(loadImage("assets/images/JAMIE/IDLE/Jamie_IDLE_" + i + ".png"));
   for (let i = 1; i <= 4; i++) jamieRun.push(loadImage("assets/images/JAMIE/RUN/Jamie_RUN_" + i + ".png"));
   for (let i = 1; i <= 5; i++) jamieJump.push(loadImage("assets/images/JAMIE/JUMP/Jamie_JUMP_" + i + ".png"));
+  for (let i = 1; i <= 2; i++) spikeImgs.push(loadImage("assets/images/Spikes/Spike_" + i + "_Sprite.png"));
   bgMusic       = loadSound("assets/sounds/nikitakondrashev-cyberpunk-437545.mp3");
   sfxJump       = loadSound("assets/sounds/Jump.mp3");
   sfxDoubleJump = loadSound("assets/sounds/Dash.mp3");
@@ -343,7 +445,14 @@ function cmy() {
 function initLevel() {
   // Select data source and environment settings based on currentLevel
   let pd, mpd, wd, ed, sd, ld, gd, cpd, vpd;
-  if (currentLevel === 2) {
+  if (currentLevel === 3) {
+    pd = LEVEL3_PLATFORMS; mpd = LEVEL3_MOVING_PLATFORMS; wd = LEVEL3_WALLS;
+    ed = LEVEL3_ENEMIES;   sd  = LEVEL3_SPIKES;           ld = LEVEL3_LASERS;
+    gd = LEVEL3_GOAL;      cpd = LEVEL3_CHECKPOINTS;      vpd = LEVEL3_VISION_PICKUP;
+    GLARE_ZONES = LEVEL3_GLARE_ZONES;
+    DARK_ZONES  = LEVEL3_DARK_ZONES;
+    darkWallTriggerX = 3100; // fires as player enters laser zone
+  } else if (currentLevel === 2) {
     pd = LEVEL2_PLATFORMS; mpd = LEVEL2_MOVING_PLATFORMS; wd = LEVEL2_WALLS;
     ed = LEVEL2_ENEMIES;   sd  = LEVEL2_SPIKES;           ld = LEVEL2_LASERS;
     gd = LEVEL2_GOAL;      cpd = LEVEL2_CHECKPOINTS;      vpd = LEVEL2_VISION_PICKUP;
@@ -735,25 +844,45 @@ function drawComingSoon() {
   updateParticles(); drawParticles();
   let pcx = width / 2, pcy = height / 2;
   let t = winTimer;
-  // Fade in for first 30 frames, hold, fade out after frame 160
-  let alpha = t < 30 ? map(t, 0, 30, 0, 255)
-            : t > 160 ? map(t, 160, 200, 255, 0)
+  // Fade in 0–40, hold 40–280, fade out 280–340
+  let alpha = t < 40  ? map(t, 0, 40, 0, 255)
+            : t > 280 ? map(t, 280, 340, 255, 0)
             : 255;
+  let a = constrain(alpha, 0, 255);
+
   textAlign(CENTER, CENTER); noStroke();
-  fill(160, 80, 255, alpha * 0.08);
-  rect(pcx - 220, pcy - 55, 440, 110, 8);
-  fill(160, 80, 255, alpha * 0.14);
-  rect(pcx - 216, pcy - 51, 432, 102, 6);
-  stroke(160, 80, 255, alpha * 0.5); strokeWeight(1.5); noFill();
-  rect(pcx - 216, pcy - 51, 432, 102, 6); noStroke();
-  fill(160, 80, 255, constrain(alpha, 0, 255));
-  textSize(28); textStyle(BOLD); text("LEVEL 3", pcx, pcy - 18);
-  fill(0, 255, 240, constrain(alpha, 0, 255));
-  textSize(14); textStyle(NORMAL); text("COMING SOON", pcx, pcy + 14);
-  fill(80, 70, 110, constrain(alpha * 0.7, 0, 255));
-  textSize(9); text("RETURNING TO MAIN MENU...", pcx, pcy + 38);
+
+  // Outer glow panel
+  fill(0, 210, 255, a * 0.05); rect(pcx - 260, pcy - 90, 520, 180, 10);
+  fill(0, 210, 255, a * 0.10); rect(pcx - 255, pcy - 85, 510, 170, 8);
+  stroke(0, 210, 255, a * 0.45); strokeWeight(1.5); noFill();
+  rect(pcx - 255, pcy - 85, 510, 170, 8); noStroke();
+
+  // "GAME COMPLETE" headline
+  fill(0, 210, 255, a * 0.12); textSize(46); textStyle(BOLD);
+  text("GAME COMPLETE", pcx + 2, pcy - 34 + 2);
+  fill(0, 210, 255, a); textSize(44); textStyle(BOLD);
+  text("GAME COMPLETE", pcx, pcy - 34);
+
+  // Subtitle
+  fill(160, 80, 255, a); textSize(13); textStyle(NORMAL);
+  text("THE BREACH IS SEALED. JAMIE VANISHES INTO THE GRID.", pcx, pcy + 12);
+
+  // Death count callout (only if player died at least once)
+  if (deathCount > 0) {
+    fill(255, 40, 100, a * 0.75); textSize(10);
+    text("BREACHES SUSTAINED: " + deathCount, pcx, pcy + 36);
+  } else {
+    fill(0, 255, 180, a * 0.75); textSize(10);
+    text("NO BREACHES SUSTAINED — FLAWLESS RUN", pcx, pcy + 36);
+  }
+
+  // Footer
+  fill(80, 70, 110, a * 0.65); textSize(9);
+  text("RETURNING TO MAIN MENU...", pcx, pcy + 62);
+
   drawScanlines(); drawVignette();
-  if (winTimer >= 200) resetGame();
+  if (winTimer >= 340) resetGame();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1270,18 +1399,38 @@ function drawEnemies() {
 function drawSpikes() {
   let pcx = player.x + player.w / 2, pcy = player.y + player.h / 2;
   let vL = camX - 50, vR = camX + width + 50;
-  for (let s of spikes) {
+  for (let i = 0; i < spikes.length; i++) {
+    let s = spikes[i];
     if (s.x + s.w < vL || s.x > vR) continue;
     let hi = (focusFade > 0 && distToRect(pcx, pcy, s.x, s.y, s.w, s.h) <= FOCUS_RADIUS) ? focusFade : 0;
     let a  = lerp(0.04, 1.0, hi);
-    let cx = s.x + s.w / 2;
-    noStroke();
-    fill(255, 80, 40, 22 * a); triangle(cx, s.y - 2, s.x - 2, s.y + s.h + 2, s.x + s.w + 2, s.y + s.h + 2);
-    fill(80, 20, 10, 210 * a); triangle(cx, s.y, s.x, s.y + s.h, s.x + s.w, s.y + s.h);
-    stroke(255, 120, 40, 190 * a); strokeWeight(1.5);
-    line(s.x, s.y + s.h, cx, s.y); line(cx, s.y, s.x + s.w, s.y + s.h);
-    if (hi > 0) { stroke(0, 255, 240, hi * 180); strokeWeight(1); line(s.x, s.y + s.h, cx, s.y); line(cx, s.y, s.x + s.w, s.y + s.h); }
-    noStroke();
+
+    if (spikeImgs.length === 2) {
+      // Alternate between Spike_1 and Spike_2 for visual variety; animate at 150ms ≈ 9 frames
+      let img    = spikeImgs[i % 2];
+      let frameH = img.width;                              // frames are square
+      let numF   = max(1, floor(img.height / frameH));
+      let frame  = floor(frameCount / 9) % numF;
+      tint(255, 255 * a);
+      image(img, s.x, s.y, s.w, s.h, 0, frame * frameH, img.width, frameH);
+      noTint();
+    } else {
+      // Fallback geometry if sprites not loaded
+      let cx = s.x + s.w / 2;
+      noStroke();
+      fill(255, 80, 40, 22 * a); triangle(cx, s.y - 2, s.x - 2, s.y + s.h + 2, s.x + s.w + 2, s.y + s.h + 2);
+      fill(80, 20, 10, 210 * a); triangle(cx, s.y, s.x, s.y + s.h, s.x + s.w, s.y + s.h);
+      stroke(255, 120, 40, 190 * a); strokeWeight(1.5);
+      line(s.x, s.y + s.h, cx, s.y); line(cx, s.y, s.x + s.w, s.y + s.h);
+    }
+
+    // Cyan echolocation outline drawn on top of sprite
+    if (hi > 0) {
+      let cx = s.x + s.w / 2;
+      stroke(0, 255, 240, hi * 180); strokeWeight(1);
+      line(s.x, s.y + s.h, cx, s.y); line(cx, s.y, s.x + s.w, s.y + s.h);
+      noStroke();
+    }
   }
 }
 
@@ -1630,9 +1779,8 @@ function drawVignette() {
 //  RESET + UTILITY
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Levels: 1 = "The Breach" (tutorial), 2 = "Encounter" (enemies + lasers)
-// Add future levels by extending initLevel()'s routing and adding LEVEL3_* constants.
-const MAX_LEVEL = 2;
+// Levels: 1 = "The Breach" (tutorial), 2 = "Encounter" (enemies + lasers), 3 = "The Infiltration" (moving platforms + 4-laser gauntlet)
+const MAX_LEVEL = 3;
 let currentLevel = 1;
 
 function startNextLevel() {

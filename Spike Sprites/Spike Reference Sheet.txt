@@ -1,0 +1,3 @@
+There should be a 150 Millisecond delay between each frame of the sprite
+
+There are two sprites, for the aesthetic reasons its best to have a variety of these 2 sprites laid out

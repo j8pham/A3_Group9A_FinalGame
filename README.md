@@ -1,6 +1,6 @@
 ## Project Title
 
-Assignment 2: Midterm Game - "Data Breach"
+Assignment 3: Final Game - "Data Breach"
 
 ---
 
@@ -45,6 +45,8 @@ Press `START GAME` on the title screen using `Enter` or by clicking the button w
 - `assets/images/JAMIE/IDLE/Jamie_IDLE_1–3.png` (original artwork, created by Emerson)
 - `assets/images/JAMIE/RUN/Jamie_RUN_1–4.png` (original artwork, created by Emerson)
 - `assets/images/JAMIE/JUMP/Jamie_JUMP_1–5.png` (original artwork, created by Emerson)
+- `assets/images/Spikes/Spike_1_Sprite.png` (original artwork, created by Emerson)
+- `assets/images/Spikes/Spike_2_Sprite.png` (original artwork, created by Emerson)
 - `assets/sounds/nikitakondrashev-cyberpunk-437545.mp3` — background music (Kondrashev, 2025)
 - `assets/sounds/Jump.mp3` — jump sound effect (copyright free)
 - `assets/sounds/Dash.mp3` — double jump sound effect (copyright free)
