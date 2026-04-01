@@ -8,7 +8,7 @@ const GRAVITY    = 1.0;
 const MOVE_SPEED = 5.5;
 const JUMP_FORCE = -15;
 const TERM_VEL   = 22;
-const WORLD_W    = 4800;
+const WORLD_W    = 4200;
 
 const FOCUS_RADIUS         = 280;
 const FOCUS_FADE_FRAMES    = 90;   // 1.5s fade on release
@@ -40,18 +40,35 @@ const LIGHT_SOURCES = [
   { x: 4300, y: 0, w: 240, h: 450, phase: 1.7,  speed: 0.098 },
 ];
 
-const GLARE_ZONES = [
-  { x: 700,  w: 350, intensity: 3.2 },
-  { x: 2600, w: 600, intensity: 6.5 },
-  { x: 3800, w: 900, intensity: 9.0 },
+// Per-level glare zones
+const LEVEL1_GLARE_ZONES = [
+  { x: 1580, w: 280, intensity: 3.2 },
+  { x: 2060, w: 480, intensity: 6.5 },
+  { x: 2900, w: 550, intensity: 9.0 },
+];
+const LEVEL2_GLARE_ZONES = [
+  { x: 1700, w: 320, intensity: 3.5 },   // Zone B — enemy section
+  { x: 2280, w: 420, intensity: 7.0 },   // Zone C — near-invisible wide gap
+  { x: 3100, w: 620, intensity: 9.5 },   // Zone D — laser gauntlet
 ];
 
-const DARK_ZONES = [
-  { x: 1700, w: 450, intensity: 0.96 },
-  { x: 4050, w: 350, intensity: 0.98 },
+// Per-level dark zones
+const LEVEL1_DARK_ZONES = [
+  { x: 1920, w: 500, intensity: 0.97 },
+  { x: 2680, w: 400, intensity: 0.95 },
+];
+const LEVEL2_DARK_ZONES = [
+  { x: 640,  w: 380, intensity: 0.90 },  // Zone A — spike platform darkness
+  { x: 2200, w: 480, intensity: 0.97 },  // Zone C — near-invisible platform zone
+  { x: 2860, w: 380, intensity: 0.94 },  // Zone D — laser approach
 ];
 
-const WIN_BTN = { x: 310, y: 378, w: 180, h: 40 };
+// Active zones — reassigned per level in initLevel()
+let GLARE_ZONES = LEVEL1_GLARE_ZONES;
+let DARK_ZONES  = LEVEL1_DARK_ZONES;
+
+const WIN_NEXT_BTN = { x: 210, y: 375, w: 175, h: 40 };
+const WIN_HOME_BTN = { x: 415, y: 375, w: 175, h: 40 };
 
 const DEATH_SHAKE_FRAMES = 18;
 const DEATH_FLASH_FRAMES = 14;
@@ -69,87 +86,143 @@ const SPIKE_H      = 14;
 const LASER_CYCLE  = 180;
 const LASER_ON_FRAC = 0.6;
 
-// ── STATIC LEVEL DATA ────────────────────────────────────────────────────────
-//  Zone 1 (0–1450):    Tutorial — wide platforms, gentle gaps, no threats.
-//  Zone 2 (1450–2600): Medium  — enemies A–B, spikes, laser 1, moving platform.
-//  Zone 3 (2600–3750): Hard    — enemies C–D, tighter jumps, laser 2, glare.
-//  Zone 4 (3750–4800): Brutal  — enemies E–F, small platforms, laser 3, heavy glare.
+// ── STATIC LEVEL DATA — LEVEL 1 ──────────────────────────────────────────────
+//  Zone A (0–1100):    Tutorial — learn movement, basic jump, intro to echolocation.
+//  Zone B (1100–1900): Double-jump wall — must surmount the wall, meets first enemy.
+//  Zone C (1900–2700): Echolocation required — near-invisible platforms, second enemy.
+//  Zone D (2700–4200): Spike gauntlet — dark wall activates, finish platform drops to ground.
 
 const LEVEL_PLATFORMS = [
-  // Zone 1
-  { x: 0,    y: 400, w: 350, h: 50 }, // start
-  { x: 430,  y: 385, w: 200, h: 20 },
-  { x: 700,  y: 370, w: 185, h: 20 },
-  { x: 955,  y: 352, w: 225, h: 20 },
-  { x: 1245, y: 358, w: 175, h: 20 },
-  // Zone 2
-  { x: 1480, y: 332, w: 180, h: 20 }, // enemy A
-  { x: 1720, y: 298, w: 145, h: 20 },
-  { x: 1925, y: 320, w: 120, h: 20 }, // spikes
-  { x: 2110, y: 275, w: 205, h: 20 }, // enemy B + laser 1 (pre-widened for combo)
-  { x: 2520, y: 298, w: 155, h: 20 }, // after moving platform 1
-  // Zone 3
-  { x: 2745, y: 265, w: 155, h: 20 }, // enemy C
-  { x: 2975, y: 240, w: 100, h: 20 }, // spikes
-  { x: 3140, y: 282, w: 90,  h: 20 },
-  { x: 3300, y: 242, w: 195, h: 20 }, // enemy D + laser 2 (pre-widened)
-  { x: 3610, y: 275, w: 125, h: 20 }, // after moving platform 2
-  // Zone 4
-  { x: 3810, y: 238, w: 135, h: 20 }, // enemy E
-  { x: 4020, y: 203, w: 80,  h: 20 }, // spikes
-  { x: 4175, y: 242, w: 195, h: 20 }, // enemy F + laser 3 (pre-widened)
-  { x: 4450, y: 207, w: 80,  h: 20 }, // spikes
-  { x: 4630, y: 368, w: 160, h: 50 }, // final
+  // Zone A — movement tutorial, comfortable gaps
+  { x: 0,    y: 400, w: 460, h: 50 }, // start ground — wide, no pressure
+  { x: 540,  y: 376, w: 200, h: 20 }, // first hop
+  { x: 808,  y: 355, w: 256, h: 20 }, // checkpoint 1 — "you can scan" hint here
+  // Zone B — double-jump required to surmount wall
+  { x: 1122, y: 333, w: 188, h: 20 }, // approach platform before wall
+  { x: 1412, y: 283, w: 218, h: 20 }, // landing platform past wall
+  { x: 1710, y: 260, w: 186, h: 20 }, // enemy A — still well-lit, intro to enemy
+  // Zone C — echolocation essential
+  { x: 1980, y: 238, w: 168, h: 20 }, // near-invisible platform — vision pickup here
+  { x: 2234, y: 218, w: 162, h: 20 }, // enemy B — barely visible without scan
+  { x: 2478, y: 228, w: 158, h: 20 }, // checkpoint 2
+  // Zone D — spike challenges, dark wall chases
+  { x: 2722, y: 240, w: 292, h: 20 }, // spike gauntlet — 5 spikes across
+  { x: 3090, y: 218, w: 128, h: 20 }, // spike pair
+  { x: 3298, y: 200, w: 128, h: 20 }, // single spike
+  { x: 3510, y: 370, w: 200, h: 50 }, // finish — drops back to ground level
 ];
 
-const LEVEL_MOVING_PLATFORMS = [
-  // MP1: x-axis — bridges Zone2 gap (P8 ends 2315 → P9 starts 2520)
-  { x: 2400, y: 260, w: 75, h: 20, axis: "x", origin: 2400, range: 65, speed: 0.8, dx: 0, dy: 0 },
-  // MP2: y-axis — vertical oscillation bridges Zone3 gap (P13 ends 3495 → P14 starts 3610)
-  { x: 3510, y: 260, w: 80, h: 20, axis: "y", origin: 260,  range: 50, speed: 1.0, dx: 0, dy: 0 },
-  // MP3: x-axis — bridges Zone4 final gap (P18 ends 4530 → Final starts 4630)
-  { x: 4565, y: 210, w: 65, h: 20, axis: "x", origin: 4565, range: 40, speed: 1.2, dx: 0, dy: 0 },
+// Wall obstacle: tall solid barrier requiring double-jump to surmount.
+// Top at y=183; player on approach platform (y=333) single-jump peaks at y≈221 (can't clear),
+// double-jump peaks at y≈171 (clears). Width 42 so player can land on top.
+const LEVEL_WALLS = [
+  { x: 1348, y: 183, w: 42, h: 150 },
 ];
+
+const LEVEL_MOVING_PLATFORMS = []; // none in Level 1
 
 const LEVEL_ENEMIES = [
-  // Zone 2 — slower
-  { x: 1480, y: 302, w: 22, h: 30, speed: 0.90, dir: 1, leftBound: 1480, rightBound: 1638, startX: 1480, startDir: 1 },
-  { x: 2110, y: 245, w: 22, h: 30, speed: 1.15, dir: 1, leftBound: 2110, rightBound: 2293, startX: 2110, startDir: 1 },
-  // Zone 3 — medium
-  { x: 2745, y: 235, w: 22, h: 30, speed: 1.45, dir: 1, leftBound: 2745, rightBound: 2878, startX: 2745, startDir: 1 },
-  { x: 3300, y: 212, w: 22, h: 30, speed: 1.65, dir: 1, leftBound: 3300, rightBound: 3473, startX: 3300, startDir: 1 },
-  // Zone 4 — fast
-  { x: 3810, y: 208, w: 22, h: 30, speed: 1.85, dir: 1, leftBound: 3810, rightBound: 3923, startX: 3810, startDir: 1 },
-  { x: 4175, y: 212, w: 22, h: 30, speed: 2.05, dir: 1, leftBound: 4175, rightBound: 4348, startX: 4175, startDir: 1 },
+  // Zone B — slow, easy to see (introduces enemy concept)
+  { x: 1710, y: 230, w: 22, h: 30, speed: 0.90, dir: 1, leftBound: 1710, rightBound: 1874, startX: 1710, startDir: 1 },
+  // Zone C — medium speed, nearly invisible without scan
+  { x: 2234, y: 188, w: 22, h: 30, speed: 1.20, dir: 1, leftBound: 2234, rightBound: 2374, startX: 2234, startDir: 1 },
 ];
 
 // Spikes are fully static — referenced directly, never modified
 const LEVEL_SPIKES = [
-  { x: 1969, y: 306, w: 16, h: 14 }, // on P7
-  { x: 1985, y: 306, w: 16, h: 14 },
-  { x: 3009, y: 226, w: 16, h: 14 }, // on P11
-  { x: 3025, y: 226, w: 16, h: 14 },
-  { x: 4044, y: 189, w: 16, h: 14 }, // on P16
-  { x: 4060, y: 189, w: 16, h: 14 },
-  { x: 4474, y: 193, w: 16, h: 14 }, // on P18
-  { x: 4490, y: 193, w: 16, h: 14 },
+  // Spike gauntlet on P9 (platform y=240, spike y=226)
+  { x: 2744, y: 226, w: 16, h: 14 },
+  { x: 2762, y: 226, w: 16, h: 14 },
+  { x: 2780, y: 226, w: 16, h: 14 },
+  { x: 2798, y: 226, w: 16, h: 14 },
+  { x: 2816, y: 226, w: 16, h: 14 },
+  // Spike pair on P10 (platform y=218, spike y=204)
+  { x: 3114, y: 204, w: 16, h: 14 },
+  { x: 3132, y: 204, w: 16, h: 14 },
+  // Single spike on P11 (platform y=200, spike y=186)
+  { x: 3322, y: 186, w: 16, h: 14 },
 ];
 
-// Lasers are fully static — referenced directly, never modified
-const LEVEL_LASERS = [
-  { x: 2100, y: 220, w: 215, h: 4, phase: 30  }, // above P8
-  { x: 3290, y: 182, w: 205, h: 4, phase: 90  }, // above P13
-  { x: 4165, y: 182, w: 205, h: 4, phase: 150 }, // above P17
-];
+// No lasers in Level 1 — introduced in later levels
+const LEVEL_LASERS = [];
 
-const LEVEL_GOAL = { x: 4748, y: 316, w: 36, h: 52 };
+// Goal: centered on finish platform (P12 x:3510, y:370, w:200)
+const LEVEL_GOAL = { x: 3588, y: 318, w: 36, h: 52 };
 
 const LEVEL_CHECKPOINTS = [
-  { x: 1783, y: 258, w: 18, h: 40 }, // center of P6 (x:1720, y:298) — no enemy, no spikes
-  { x: 3663, y: 235, w: 18, h: 40 }, // center of P14 (x:3610, y:275) — no enemy, no spikes
+  { x: 927, y: 315, w: 18, h: 40 },  // center of P2 (x:808, y:355, w:256)
+  { x: 2548, y: 188, w: 18, h: 40 }, // center of P8 (x:2478, y:228, w:158)
 ];
 
-const LEVEL_VISION_PICKUP = { x: 3150, y: 262, w: 16, h: 16 };
+// Vision pickup sits on the near-invisible platform in Zone C — reward for scanning
+const LEVEL_VISION_PICKUP = { x: 2052, y: 222, w: 16, h: 16 };
+
+// ── LEVEL 2 DATA — "Encounter" ────────────────────────────────────────────────
+//  Zone A (0–1300):    Warmup — hop, spike platform (hard to see, forced scan).
+//  Zone B (1300–2200): Enemy trio — progressively faster; echolocation reveals threats.
+//  Zone C (2200–2700): Wide gap (double-jump) to near-invisible platform + checkpoint.
+//  Zone D (2700–3920): Enemy D + three laser beams + vision pickup in laser zone.
+//  Zone E (3920–4200): Finish drops to ground level.
+
+const LEVEL2_PLATFORMS = [
+  // Zone A — familiar warmup with a nasty spike trap
+  { x: 0,    y: 400, w: 410, h: 50 }, // start ground
+  { x: 490,  y: 376, w: 180, h: 20 }, // first hop
+  { x: 728,  y: 358, w: 200, h: 20 }, // SPIKE PLATFORM — barely visible, scan required
+  { x: 985,  y: 370, w: 310, h: 20 }, // long approach
+  // Zone B — enemy trio, ascending difficulty
+  { x: 1355, y: 348, w: 215, h: 20 }, // enemy A — slow, short patrol
+  { x: 1626, y: 326, w: 215, h: 20 }, // enemy B — medium speed
+  { x: 1901, y: 305, w: 252, h: 20 }, // enemy C — fast, wide patrol
+  // Zone C — 222 px gap forces double-jump; near-invisible landing
+  { x: 2375, y: 282, w: 185, h: 20 }, // barely visible; checkpoint here
+  // Zone D — enemy D then three lasers
+  { x: 2622, y: 264, w: 215, h: 20 }, // enemy D — post-checkpoint
+  { x: 2900, y: 248, w: 178, h: 20 }, // laser approach
+  { x: 3142, y: 233, w: 500, h: 20 }, // laser main — wide, 3 lasers above
+  { x: 3704, y: 244, w: 210, h: 20 }, // after laser zone
+  // Zone E — finish
+  { x: 3976, y: 370, w: 200, h: 50 }, // finish — drops back to ground
+];
+
+const LEVEL2_WALLS = []; // no wall in Level 2
+
+const LEVEL2_MOVING_PLATFORMS = []; // no moving platforms in Level 2
+
+const LEVEL2_ENEMIES = [
+  // A — intro: slow, short patrol on P4
+  { x: 1355, y: 318, w: 22, h: 30, speed: 0.85, dir: 1, leftBound: 1355, rightBound: 1548, startX: 1355, startDir: 1 },
+  // B — medium on P5
+  { x: 1626, y: 296, w: 22, h: 30, speed: 1.15, dir: 1, leftBound: 1626, rightBound: 1819, startX: 1626, startDir: 1 },
+  // C — fast, wide patrol on P6
+  { x: 1901, y: 275, w: 22, h: 30, speed: 1.55, dir: 1, leftBound: 1901, rightBound: 2131, startX: 1901, startDir: 1 },
+  // D — post-checkpoint guard on P8
+  { x: 2622, y: 234, w: 22, h: 30, speed: 1.30, dir: 1, leftBound: 2622, rightBound: 2815, startX: 2622, startDir: 1 },
+];
+
+// Two spikes at centre of spike platform P2 (y=358, spike.y = 344)
+const LEVEL2_SPIKES = [
+  { x: 806, y: 344, w: 16, h: 14 },
+  { x: 824, y: 344, w: 16, h: 14 },
+];
+
+// Three horizontal lasers above P10 (platform y=233, laser y=178)
+const LEVEL2_LASERS = [
+  { x: 3162, y: 178, w: 145, h: 4, phase: 20  },
+  { x: 3370, y: 178, w: 145, h: 4, phase: 80  },
+  { x: 3558, y: 178, w: 145, h: 4, phase: 140 },
+];
+
+// Goal centred on finish platform P12 (x:3976, y:370, w:200)
+const LEVEL2_GOAL = { x: 4058, y: 318, w: 36, h: 52 };
+
+// One checkpoint — on the barely-visible platform P7
+const LEVEL2_CHECKPOINTS = [
+  { x: 2458, y: 242, w: 18, h: 40 },
+];
+
+// Vision pickup on laser platform P10 — gives brief clarity mid-gauntlet
+const LEVEL2_VISION_PICKUP = { x: 3300, y: 217, w: 16, h: 16 };
 
 const VISION_BOOST_FRAMES = 300;
 const VISION_FADE_FRAMES  = 60;
@@ -181,9 +254,9 @@ function preload() {
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
 let player;
-let platforms, movingPlatforms, enemies, goal;
+let platforms, movingPlatforms, walls, enemies, goal;
 let spikes, lasers;
-let allPlats = []; // built once: platforms + movingPlatform refs (updated in-place)
+let allPlats = []; // built once: platforms + movingPlatforms + walls (updated in-place)
 
 let camX        = 0;
 let playerFacing = 1;
@@ -199,11 +272,13 @@ let visionBoostTimer  = 0;
 
 let darkWallX         = -200;
 let darkWallActive    = false;
+let darkWallTriggerX  = 2900; // set per level in initLevel()
 
 let gameState    = "start";
 let introTimer   = 0;
 let winTimer     = 0;
 let menuSelection = 0;
+let winMenuSel   = 0; // 0 = NEXT LEVEL, 1 = HOME
 
 let focusActive     = false;
 let focusFade       = 0;
@@ -266,19 +341,36 @@ function cmy() {
 
 // ── Level initialisation ───────────────────────────────────────────────────────
 function initLevel() {
-  // Shallow-copy mutable arrays from const level data
-  platforms       = LEVEL_PLATFORMS.map(p  => Object.assign({}, p));
-  movingPlatforms = LEVEL_MOVING_PLATFORMS.map(mp => Object.assign({}, mp));
-  enemies         = LEVEL_ENEMIES.map(e  => Object.assign({}, e));
-  spikes          = LEVEL_SPIKES;   // immutable — share reference
-  lasers          = LEVEL_LASERS;   // immutable — share reference
-  goal            = Object.assign({}, LEVEL_GOAL);
-  // Single combined array — moving platform positions update in-place
-  allPlats = platforms.concat(movingPlatforms);
-  checkpoints         = LEVEL_CHECKPOINTS.map(c => Object.assign({ activated: false }, c));
+  // Select data source and environment settings based on currentLevel
+  let pd, mpd, wd, ed, sd, ld, gd, cpd, vpd;
+  if (currentLevel === 2) {
+    pd = LEVEL2_PLATFORMS; mpd = LEVEL2_MOVING_PLATFORMS; wd = LEVEL2_WALLS;
+    ed = LEVEL2_ENEMIES;   sd  = LEVEL2_SPIKES;           ld = LEVEL2_LASERS;
+    gd = LEVEL2_GOAL;      cpd = LEVEL2_CHECKPOINTS;      vpd = LEVEL2_VISION_PICKUP;
+    GLARE_ZONES = LEVEL2_GLARE_ZONES;
+    DARK_ZONES  = LEVEL2_DARK_ZONES;
+    darkWallTriggerX = 3200; // fires in laser zone
+  } else {
+    pd = LEVEL_PLATFORMS; mpd = LEVEL_MOVING_PLATFORMS; wd = LEVEL_WALLS;
+    ed = LEVEL_ENEMIES;   sd  = LEVEL_SPIKES;           ld = LEVEL_LASERS;
+    gd = LEVEL_GOAL;      cpd = LEVEL_CHECKPOINTS;      vpd = LEVEL_VISION_PICKUP;
+    GLARE_ZONES = LEVEL1_GLARE_ZONES;
+    DARK_ZONES  = LEVEL1_DARK_ZONES;
+    darkWallTriggerX = 2900;
+  }
+
+  platforms       = pd.map(p  => Object.assign({}, p));
+  movingPlatforms = mpd.map(mp => Object.assign({}, mp));
+  walls           = wd.map(w  => Object.assign({}, w));
+  enemies         = ed.map(e  => Object.assign({}, e));
+  spikes          = sd;
+  lasers          = ld;
+  goal            = Object.assign({}, gd);
+  allPlats = platforms.concat(movingPlatforms).concat(walls);
+  checkpoints         = cpd.map(c => Object.assign({ activated: false }, c));
   activeCheckpointIdx = -1;
   cpPulseTimers       = checkpoints.map(() => 0);
-  visionPickup        = Object.assign({}, LEVEL_VISION_PICKUP);
+  visionPickup        = Object.assign({}, vpd);
   visionBoostTimer    = 0;
   darkWallX           = -200;
   darkWallActive      = false;
@@ -327,8 +419,9 @@ function initParticles() {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function draw() {
-  if (gameState === "start") { drawStartScreen(); return; }
-  if (gameState === "win")   { drawWinScreen();   return; }
+  if (gameState === "start")      { drawStartScreen();    return; }
+  if (gameState === "win")        { drawWinScreen();      return; }
+  if (gameState === "comingsoon") { drawComingSoon();     return; }
 
   if (gameState === "winning") {
     winTimer++;
@@ -336,7 +429,7 @@ function draw() {
     drawParallax(true);
     push(); translate(-camX, 0);
     drawLights(); drawPlatforms(); drawMovingPlatforms();
-    drawGoal(); drawEnemies();
+    drawWalls(); drawGoal(); drawEnemies();
     pop();
     updateParticles(); drawParticles();
     drawNoise(); drawScanlines(); drawVignette();
@@ -389,6 +482,7 @@ function draw() {
   drawGlareZones();
   drawPlatforms();
   drawMovingPlatforms();
+  drawWalls();
   drawGoal();
   drawCheckpoints();
   drawVisionPickup();
@@ -397,8 +491,6 @@ function draw() {
   drawLasers();
   drawAfterimages();
   drawPlayer();
-  drawFocusPulse();
-  drawFocusIndicator();
   pop();
   drawDarkZones();
   drawDarkWall();
@@ -422,6 +514,8 @@ function draw() {
   drawNoise();
   drawScanlines();
   drawVignette();
+  // Echolocation highlights are drawn LAST — on top of every overlay layer
+  drawEchoHighlights();
   drawHUD();
 }
 
@@ -565,9 +659,9 @@ function drawIntroScene() {
   updateEnemies();
   push(); translate(-camX + sx, sy);
   if (inFlash) {
-    drawLights(); drawPlatforms(); drawMovingPlatforms(); drawGoal(); drawEnemies();
+    drawLights(); drawPlatforms(); drawMovingPlatforms(); drawWalls(); drawGoal(); drawEnemies();
   } else {
-    drawPlatformsFull(); drawMovingPlatformsFull(); drawGoalFull(); drawEnemiesFull();
+    drawPlatformsFull(); drawMovingPlatformsFull(); drawWallsFull(); drawGoalFull(); drawEnemiesFull();
   }
   drawPlayer(); pop();
   updateParticles(); drawParticles(); drawScanlines();
@@ -581,7 +675,7 @@ function drawIntroScene() {
 function drawWinScreen() {
   background(12, 8, 20);
   updateParticles(); drawParticles();
-  let pcx = width / 2, pcy = 218;
+  let pcx = width / 2, pcy = 205;
   drawPortalVFX(pcx, pcy, 52, 82, 1.0);
   if (jamieIdle.length > 0) {
     push(); tint(255, 255, 255, 200); imageMode(CENTER);
@@ -589,24 +683,77 @@ function drawWinScreen() {
     imageMode(CORNER); pop();
   }
   textAlign(CENTER, CENTER);
-  fill(0, 255, 240); textSize(44); textStyle(BOLD); text("DATA SECURED", pcx, 68);
-  stroke(255, 50, 150, 70); strokeWeight(1); line(pcx - 190, 90, pcx + 190, 90); noStroke();
-  fill(200, 60, 255); textSize(14); textStyle(NORMAL); text("OBJECTIVE COMPLETE", pcx, 322);
+  fill(0, 255, 240); textSize(44); textStyle(BOLD); text("DATA SECURED", pcx, 62);
+  stroke(255, 50, 150, 70); strokeWeight(1); line(pcx - 190, 84, pcx + 190, 84); noStroke();
+  fill(200, 60, 255); textSize(14); textStyle(NORMAL); text("OBJECTIVE COMPLETE", pcx, 308);
   fill(255, 50, 150, 180); textSize(11);
   text(deathCount === 0 ? "FLAWLESS RUN   //   ZERO BREACHES"
-                        : "SYSTEM BREACHES: " + deathCount, pcx, 350);
+                        : "SYSTEM BREACHES: " + deathCount, pcx, 330);
   fill(45, 42, 65); textSize(10);
-  text("ACCESS NODE REACHED   //   NEURAL LINK ESTABLISHED", pcx, 368);
-  // Restart button
-  let btnPulse = 0.7 + 0.3 * sin(frameCount * 0.08);
-  noStroke(); fill(0, 255, 240, 18 * btnPulse); rect(WIN_BTN.x - 4, WIN_BTN.y - 4, WIN_BTN.w + 8, WIN_BTN.h + 8, 5);
-  fill(0, 255, 240, 35 * btnPulse); rect(WIN_BTN.x, WIN_BTN.y, WIN_BTN.w, WIN_BTN.h, 3);
-  stroke(0, 255, 240, 220 * btnPulse); strokeWeight(1.5); noFill(); rect(WIN_BTN.x, WIN_BTN.y, WIN_BTN.w, WIN_BTN.h, 3);
-  noStroke(); fill(0, 255, 240); textSize(13); textStyle(BOLD);
-  text("[ RESTART ]", pcx, WIN_BTN.y + WIN_BTN.h / 2);
-  fill(100, 90, 140, 160); textSize(9); textStyle(NORMAL);
-  text("PRESS ENTER  OR  CLICK ANYWHERE", pcx, WIN_BTN.y + WIN_BTN.h + 16);
+  text("ACCESS NODE REACHED   //   NEURAL LINK ESTABLISHED", pcx, 348);
+
+  // Hover detection
+  let mx = cmx(), my = cmy();
+  if (mx >= WIN_NEXT_BTN.x && mx <= WIN_NEXT_BTN.x + WIN_NEXT_BTN.w &&
+      my >= WIN_NEXT_BTN.y && my <= WIN_NEXT_BTN.y + WIN_NEXT_BTN.h) winMenuSel = 0;
+  if (mx >= WIN_HOME_BTN.x && mx <= WIN_HOME_BTN.x + WIN_HOME_BTN.w &&
+      my >= WIN_HOME_BTN.y && my <= WIN_HOME_BTN.y + WIN_HOME_BTN.h) winMenuSel = 1;
+
+  // Draw both buttons
+  drawWinButton(WIN_NEXT_BTN, "[ NEXT LEVEL ]", winMenuSel === 0, [0, 255, 240]);
+  drawWinButton(WIN_HOME_BTN, "[ MAIN MENU ]",  winMenuSel === 1, [160, 80, 255]);
+
+  fill(100, 90, 140, 160); textSize(9); textStyle(NORMAL); textAlign(CENTER, CENTER);
+  text("ARROW KEYS TO SELECT   //   ENTER TO CONFIRM", pcx, WIN_NEXT_BTN.y + WIN_NEXT_BTN.h + 16);
   drawScanlines(); drawVignette();
+}
+
+function drawWinButton(btn, label, selected, col) {
+  let pulse = 0.7 + 0.3 * sin(frameCount * 0.08);
+  let cx = btn.x + btn.w / 2, cy = btn.y + btn.h / 2;
+  noStroke();
+  if (selected) {
+    fill(col[0], col[1], col[2], 18 * pulse); rect(btn.x - 4, btn.y - 4, btn.w + 8, btn.h + 8, 5);
+    fill(col[0], col[1], col[2], 38 * pulse); rect(btn.x, btn.y, btn.w, btn.h, 3);
+    stroke(col[0], col[1], col[2], 220 * pulse); strokeWeight(1.5); noFill();
+    rect(btn.x, btn.y, btn.w, btn.h, 3); noStroke();
+    fill(col[0], col[1], col[2]); textSize(13); textStyle(BOLD);
+    text(label, cx, cy);
+  } else {
+    fill(30, 25, 45, 160); rect(btn.x, btn.y, btn.w, btn.h, 3);
+    stroke(col[0], col[1], col[2], 70); strokeWeight(1); noFill();
+    rect(btn.x, btn.y, btn.w, btn.h, 3); noStroke();
+    fill(col[0] * 0.7, col[1] * 0.7, col[2] * 0.7, 190); textSize(13); textStyle(BOLD);
+    text(label, cx, cy);
+  }
+  textStyle(NORMAL);
+}
+
+function drawComingSoon() {
+  winTimer++;
+  background(12, 8, 20);
+  updateParticles(); drawParticles();
+  let pcx = width / 2, pcy = height / 2;
+  let t = winTimer;
+  // Fade in for first 30 frames, hold, fade out after frame 160
+  let alpha = t < 30 ? map(t, 0, 30, 0, 255)
+            : t > 160 ? map(t, 160, 200, 255, 0)
+            : 255;
+  textAlign(CENTER, CENTER); noStroke();
+  fill(160, 80, 255, alpha * 0.08);
+  rect(pcx - 220, pcy - 55, 440, 110, 8);
+  fill(160, 80, 255, alpha * 0.14);
+  rect(pcx - 216, pcy - 51, 432, 102, 6);
+  stroke(160, 80, 255, alpha * 0.5); strokeWeight(1.5); noFill();
+  rect(pcx - 216, pcy - 51, 432, 102, 6); noStroke();
+  fill(160, 80, 255, constrain(alpha, 0, 255));
+  textSize(28); textStyle(BOLD); text("LEVEL 3", pcx, pcy - 18);
+  fill(0, 255, 240, constrain(alpha, 0, 255));
+  textSize(14); textStyle(NORMAL); text("COMING SOON", pcx, pcy + 14);
+  fill(80, 70, 110, constrain(alpha * 0.7, 0, 255));
+  textSize(9); text("RETURNING TO MAIN MENU...", pcx, pcy + 38);
+  drawScanlines(); drawVignette();
+  if (winTimer >= 200) resetGame();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -784,8 +931,16 @@ function overlaps(a, b) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function keyPressed() {
+  if (gameState === "comingsoon") { resetGame(); return; }
   if (gameState === "win") {
-    if (keyCode === ENTER || keyCode === 82) { resetGame(); return; } // Enter or R
+    if (keyCode === LEFT_ARROW  || keyCode === 65) { winMenuSel = 0; return; }
+    if (keyCode === RIGHT_ARROW || keyCode === 68) { winMenuSel = 1; return; }
+    if (keyCode === ENTER) {
+      if (winMenuSel === 0) startNextLevel();
+      else                  resetGame();
+      return;
+    }
+    return;
   }
   if (gameState === "start") {
     if (keyCode === DOWN_ARROW || keyCode === 83) { menuSelection = (menuSelection + 1) % 2; return; }
@@ -821,8 +976,16 @@ function mousePressed() {
     }
     return;
   }
+  if (gameState === "comingsoon") { resetGame(); return; }
   if (gameState === "win") {
-    resetGame();
+    if (mx >= WIN_NEXT_BTN.x && mx <= WIN_NEXT_BTN.x + WIN_NEXT_BTN.w &&
+        my >= WIN_NEXT_BTN.y && my <= WIN_NEXT_BTN.y + WIN_NEXT_BTN.h) {
+      startNextLevel(); return;
+    }
+    if (mx >= WIN_HOME_BTN.x && mx <= WIN_HOME_BTN.x + WIN_HOME_BTN.w &&
+        my >= WIN_HOME_BTN.y && my <= WIN_HOME_BTN.y + WIN_HOME_BTN.h) {
+      resetGame(); return;
+    }
   }
 }
 
@@ -969,6 +1132,35 @@ function drawMovingPlatformNeon(p, a, hi) {
 
 function drawPlatformsFull()       { for (let p  of platforms)       drawPlatformNeon(p,  1.0, 0); noStroke(); }
 function drawMovingPlatformsFull() { for (let mp of movingPlatforms) drawMovingPlatformNeon(mp, 1.0, 0); noStroke(); }
+
+// ── Walls — always fully visible, pink/magenta neon (the known obstacle) ──────
+function drawWallNeon(w) {
+  noStroke();
+  fill(255, 50, 160, 20);  rect(w.x - 4, w.y - 4, w.w + 8, w.h + 8);
+  fill(55, 10, 35, 215);   rect(w.x, w.y, w.w, w.h);
+  fill(255, 70, 170, 80);  rect(w.x, w.y, w.w, 3);              // top highlight
+  fill(255, 70, 170, 35);  rect(w.x, w.y + 3, 3, w.h - 3);      // left edge glow
+  fill(255, 70, 170, 35);  rect(w.x + w.w - 3, w.y + 3, 3, w.h - 3); // right edge glow
+  stroke(255, 50, 160, 240); strokeWeight(2.5);
+  line(w.x, w.y, w.x + w.w, w.y);           // top neon line
+  stroke(255, 50, 160, 160); strokeWeight(1.5);
+  line(w.x, w.y, w.x, w.y + w.h);           // left neon line
+  line(w.x + w.w, w.y, w.x + w.w, w.y + w.h); // right neon line
+  stroke(255, 50, 160, 60); strokeWeight(1);
+  line(w.x, w.y + w.h, w.x + w.w, w.y + w.h); // bottom
+  noStroke();
+}
+
+function drawWalls() {
+  let vL = camX - 50, vR = camX + width + 50;
+  for (let w of walls) {
+    if (w.x + w.w < vL || w.x > vR) continue;
+    drawWallNeon(w);
+  }
+  noStroke();
+}
+
+function drawWallsFull() { for (let w of walls) drawWallNeon(w); noStroke(); }
 
 function drawPlatforms() {
   let pcx = player.x + player.w / 2, pcy = player.y + player.h / 2;
@@ -1197,6 +1389,128 @@ function drawGoal() {
 //  VISUAL — Focus pulse + indicator
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════════════════════════
+//  ECHOLOCATION HIGHLIGHT PASS
+//  Drawn AFTER every overlay (dark zones, noise, vignette) so highlights are
+//  always visible regardless of how hostile the background is.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function drawEchoHighlights() {
+  // Always draw the focus pulse + indicator on top of overlays
+  push(); translate(-camX, 0);
+  drawFocusPulse();
+  drawFocusIndicator();
+  pop();
+
+  // Object outlines only active while scan is fading
+  if (focusFade <= 0) return;
+
+  let hi  = focusFade;
+  let pcx = player.x + player.w / 2, pcy = player.y + player.h / 2;
+  let vL  = camX - 50, vR = camX + width + 50;
+
+  push(); translate(-camX, 0);
+
+  // ── Platforms — green neon outline ──────────────────────────────────────────
+  for (let p of platforms) {
+    if (p.x + p.w < vL || p.x > vR) continue;
+    if (distToRect(pcx, pcy, p.x, p.y, p.w, p.h) > FOCUS_RADIUS) continue;
+    noFill();
+    stroke(0, 255, 140, hi * 55);  strokeWeight(12); rect(p.x, p.y, p.w, p.h);
+    stroke(0, 255, 140, hi * 180); strokeWeight(2);   rect(p.x, p.y, p.w, p.h);
+    // Extra-bright top edge — the surface you land on
+    stroke(0, 255, 240, hi * 255); strokeWeight(3);
+    line(p.x, p.y, p.x + p.w, p.y);
+    stroke(0, 255, 240, hi * 80);  strokeWeight(8);
+    line(p.x, p.y, p.x + p.w, p.y);
+  }
+
+  // ── Moving platforms — purple neon outline ───────────────────────────────────
+  for (let mp of movingPlatforms) {
+    if (distToRect(pcx, pcy, mp.x, mp.y, mp.w, mp.h) > FOCUS_RADIUS) continue;
+    noFill();
+    stroke(120, 80, 255, hi * 55);  strokeWeight(12); rect(mp.x, mp.y, mp.w, mp.h);
+    stroke(120, 80, 255, hi * 180); strokeWeight(2);   rect(mp.x, mp.y, mp.w, mp.h);
+    stroke(0, 255, 240, hi * 255); strokeWeight(3);
+    line(mp.x, mp.y, mp.x + mp.w, mp.y);
+    stroke(0, 255, 240, hi * 80);  strokeWeight(8);
+    line(mp.x, mp.y, mp.x + mp.w, mp.y);
+  }
+
+  // ── Enemies — red danger outline + crosshair ─────────────────────────────────
+  for (let e of enemies) {
+    if (e.x + e.w < vL || e.x > vR) continue;
+    if (distToRect(pcx, pcy, e.x, e.y, e.w, e.h) > FOCUS_RADIUS) continue;
+    noFill();
+    stroke(255, 30, 20, hi * 90);  strokeWeight(16); rect(e.x - 2, e.y - 2, e.w + 4, e.h + 4);
+    stroke(255, 60, 20, hi * 255); strokeWeight(2);   rect(e.x, e.y, e.w, e.h);
+    // Crosshair to flag the threat centre
+    let ecx = e.x + e.w / 2, ecy = e.y + e.h / 2;
+    stroke(255, 60, 20, hi * 200); strokeWeight(1.5);
+    line(ecx - 10, ecy, ecx + 10, ecy);
+    line(ecx, ecy - 10, ecx, ecy + 10);
+  }
+
+  // ── Spikes — orange triangle outline ─────────────────────────────────────────
+  for (let s of spikes) {
+    if (s.x + s.w < vL || s.x > vR) continue;
+    if (distToRect(pcx, pcy, s.x, s.y, s.w, s.h) > FOCUS_RADIUS) continue;
+    let scx = s.x + s.w / 2;
+    noFill();
+    stroke(255, 120, 0, hi * 80);  strokeWeight(10);
+    triangle(scx, s.y, s.x, s.y + s.h, s.x + s.w, s.y + s.h);
+    stroke(255, 180, 40, hi * 255); strokeWeight(2);
+    triangle(scx, s.y, s.x, s.y + s.h, s.x + s.w, s.y + s.h);
+  }
+
+  // ── Lasers — hot-red beam highlight ──────────────────────────────────────────
+  for (let l of lasers) {
+    if (l.x + l.w < vL || l.x > vR) continue;
+    if (distToRect(pcx, pcy, l.x, l.y, l.w, l.h) > FOCUS_RADIUS) continue;
+    let isOn = ((frameCount + l.phase) % LASER_CYCLE) < LASER_CYCLE * LASER_ON_FRAC;
+    let lAlpha = isOn ? 255 : 140;
+    stroke(255, 30, 70, hi * lAlpha * 0.35); strokeWeight(14);
+    line(l.x, l.y + 2, l.x + l.w, l.y + 2);
+    stroke(255, 30, 70, hi * lAlpha); strokeWeight(isOn ? 4 : 2);
+    line(l.x, l.y + 2, l.x + l.w, l.y + 2);
+    // End-cap emitters
+    noStroke(); fill(255, 30, 70, hi * lAlpha);
+    ellipse(l.x + 3, l.y + 2, 6, 6); ellipse(l.x + l.w - 3, l.y + 2, 6, 6);
+  }
+
+  // ── Goal — cyan pulse ring ────────────────────────────────────────────────────
+  if (distToRect(pcx, pcy, goal.x, goal.y, goal.w, goal.h) <= FOCUS_RADIUS) {
+    let gcx = goal.x + goal.w / 2, gcy = goal.y + goal.h / 2;
+    noFill();
+    stroke(0, 255, 240, hi * 70);  strokeWeight(14);
+    ellipse(gcx, gcy, goal.w + 20, goal.h + 16);
+    stroke(0, 255, 240, hi * 230); strokeWeight(2.5);
+    ellipse(gcx, gcy, goal.w + 20, goal.h + 16);
+  }
+
+  // ── Checkpoints — teal outline ────────────────────────────────────────────────
+  for (let cp of checkpoints) {
+    if (cp.x + cp.w < vL || cp.x > vR) continue;
+    if (distToRect(pcx, pcy, cp.x, cp.y, cp.w, cp.h) > FOCUS_RADIUS) continue;
+    noFill();
+    stroke(0, 255, 240, hi * 50);  strokeWeight(8); rect(cp.x - 1, cp.y - 1, cp.w + 2, cp.h + 2);
+    stroke(0, 255, 240, hi * 200); strokeWeight(1.5); rect(cp.x - 1, cp.y - 1, cp.w + 2, cp.h + 2);
+  }
+
+  // ── Vision pickup — bright green beacon ──────────────────────────────────────
+  if (visionPickup) {
+    let vp = visionPickup;
+    if (distToRect(pcx, pcy, vp.x, vp.y, vp.w, vp.h) <= FOCUS_RADIUS) {
+      let vcx = vp.x + vp.w / 2, vcy = vp.y + vp.h / 2;
+      noFill();
+      stroke(0, 255, 200, hi * 60);  strokeWeight(14); ellipse(vcx, vcy, 36, 36);
+      stroke(0, 255, 200, hi * 230); strokeWeight(2);   ellipse(vcx, vcy, 36, 36);
+    }
+  }
+
+  noStroke(); pop();
+}
+
 function drawFocusPulse() {
   if (!focusPulseOn) return;
   focusPulseR += 10;
@@ -1316,11 +1630,25 @@ function drawVignette() {
 //  RESET + UTILITY
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function resetGame() {
-  if (bgMusic      && bgMusic.isPlaying())      bgMusic.stop();
-  if (sfxDeath     && sfxDeath.isPlaying())     sfxDeath.stop();
-  if (sfxGoal      && sfxGoal.isPlaying())      sfxGoal.stop();
-  if (sfxFocus     && sfxFocus.isPlaying())     sfxFocus.stop();
+// Levels: 1 = "The Breach" (tutorial), 2 = "Encounter" (enemies + lasers)
+// Add future levels by extending initLevel()'s routing and adding LEVEL3_* constants.
+const MAX_LEVEL = 2;
+let currentLevel = 1;
+
+function startNextLevel() {
+  currentLevel++;
+  if (currentLevel > MAX_LEVEL) {
+    // All levels complete — show coming-soon screen then return to menu
+    currentLevel = 1;
+    gameState = "comingsoon";
+    winTimer = 0;
+    return;
+  }
+  _doLevelStart();
+}
+
+function _doLevelStart() {
+  if (bgMusic && bgMusic.isPlaying()) bgMusic.stop();
   player.x = 60; player.y = 360;
   player.vx = 0; player.vy = 0; player.onGround = false;
   playerFacing = 1;
@@ -1333,7 +1661,30 @@ function resetGame() {
   afterimages = []; coyoteTimer = 0; wasOnGround = false;
   jumpHeld = false; canDoubleJump = false;
   activeCheckpointIdx = -1; darkWallX = -200; darkWallActive = false;
-  menuSelection = 0;
+  winMenuSel = 0;
+  gameState = "intro"; introTimer = 0; winTimer = 0;
+  startMusic();
+}
+
+function resetGame() {
+  if (bgMusic      && bgMusic.isPlaying())      bgMusic.stop();
+  if (sfxDeath     && sfxDeath.isPlaying())     sfxDeath.stop();
+  if (sfxGoal      && sfxGoal.isPlaying())      sfxGoal.stop();
+  if (sfxFocus     && sfxFocus.isPlaying())     sfxFocus.stop();
+  currentLevel = 1;
+  player.x = 60; player.y = 360;
+  player.vx = 0; player.vy = 0; player.onGround = false;
+  playerFacing = 1;
+  initLevel();
+  camX = 0;
+  focusActive = false; focusFade = 0; prevFocusKey = false;
+  focusPulseOn = false; focusPulseR = 0; focusFlashTimer = 0;
+  focusCooldown = 0; focusWasUsed = false;
+  deathCount = 0; deathShakeTimer = 0; deathFlashTimer = 0;
+  afterimages = []; coyoteTimer = 0; wasOnGround = false;
+  jumpHeld = false; canDoubleJump = false;
+  activeCheckpointIdx = -1; darkWallX = -200; darkWallActive = false;
+  menuSelection = 0; winMenuSel = 0;
   gameState = "start"; introTimer = 0; winTimer = 0;
 }
 
@@ -1446,7 +1797,7 @@ function drawVisionPickup() {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function updateDarkWall() {
-  if (!darkWallActive && player.x >= 2600) {
+  if (!darkWallActive && player.x >= darkWallTriggerX) {
     darkWallActive = true;
     darkWallX = player.x - 300;
   }
