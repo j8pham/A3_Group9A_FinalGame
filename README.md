@@ -52,6 +52,7 @@ Press `START GAME` on the title screen using `Enter` or by clicking the button w
 - `assets/images/Enemies/Enemy_2/Enemy-2-Idle.png` (original artwork, created by Emerson)
 - `assets/images/Enemies/Enemy_2/Enemy-2-Walking.png` (original artwork, created by Emerson)
 - `assets/images/Enemies/Enemy_2/Enemy-2-Attack.png` (original artwork, created by Emerson)
+- `assets/images/Checkpoint/Checkpoint.png` (original artwork, created by Emerson)
 - `assets/sounds/nikitakondrashev-cyberpunk-437545.mp3` — background music (Kondrashev, 2025)
 - `assets/sounds/Jump.mp3` — jump sound effect (copyright free)
 - `assets/sounds/Dash.mp3` — double jump sound effect (copyright free)

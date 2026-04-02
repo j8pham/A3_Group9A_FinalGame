@@ -235,106 +235,124 @@ const LEVEL2_CHECKPOINTS = [
 const LEVEL2_VISION_PICKUP = { x: 3445, y: 217, w: 16, h: 16 };
 
 // ── LEVEL 3 DATA — "The Infiltration" ────────────────────────────────────────
-//  Zone A (0–900):     Two warm-up hops + MP1 bridges 230px gap (moving plat intro).
-//  Zone B (900–1800):  Dark area; wide spike platform (5 spikes) + enemy A.
-//  Zone C (1800–2820): Near-invisible platforms; enemy B; MP2 bridges 230px gap.
-//  Zone D (2820–3840): Dense spike gauntlet platform; 4 lasers + hidden spikes; enemy C.
-//  Zone E (3840–4200): Checkpoint 2 + enemy D; finish drops to ground.
+//  Zone A (0–600):     Start + dark platform (forces focus).
+//  Zone B (600–1200):  Early lasers — "one path is right", flickering.
+//  Zone C (1200–1800):  Spikes + enemy A.
+//  Zone D (1800–2600):  Moving platform gap + dark zone + enemy B.
+//  Zone E (2600–3200):  Checkpoint + enemy C + MP2 + vision pickup.
+//  Zone F (3200–3800):  MASSIVE spike gauntlet (signature challenge).
+//  Zone G (3800–4200):  CP2 + enemy D + final lasers + goal.
 
 const LEVEL3_PLATFORMS = [
-  // Zone A — two easy hops, then MP1 required
+  // Zone A — start + dark platform
   { x: 0,    y: 400, w: 340, h: 50 }, // P0  start ground
   { x: 420,  y: 376, w: 160, h: 20 }, // P1  first hop
-  { x: 650,  y: 356, w: 170, h: 20 }, // P2  second hop → 230px gap needs MP1
-  // Zone B — dark; spike platform; enemy A
-  { x: 1050, y: 336, w: 160, h: 20 }, // P3  landing after MP1
-  { x: 1280, y: 316, w: 220, h: 20 }, // P4  SPIKE PLATFORM wide (dark, scan required)
-  { x: 1560, y: 295, w: 200, h: 20 }, // P5  enemy A patrol
-  // Zone C — near-invisible; enemy B; MP2 required
-  { x: 1840, y: 276, w: 160, h: 20 }, // P6  near-invisible approach
-  { x: 2080, y: 260, w: 170, h: 20 }, // P7  checkpoint 1 (barely visible)
-  { x: 2360, y: 244, w: 160, h: 20 }, // P8  enemy B → 230px gap needs MP2
-  // Zone D — dense spike gauntlet then laser main
-  { x: 2780, y: 228, w: 160, h: 20 }, // P9  landing after MP2; spike gauntlet approach
-  { x: 3010, y: 214, w: 480, h: 20 }, // P10 laser main — wide, 4 lasers + hidden spikes
-  // Zone E — checkpoint 2 + last enemy + finish
-  { x: 3552, y: 228, w: 180, h: 20 }, // P11 after laser; checkpoint 2 + enemy C
-  { x: 3800, y: 244, w: 170, h: 20 }, // P12 enemy D short patrol
-  { x: 4020, y: 370, w: 160, h: 50 }, // P13 finish — drops to ground
+  { x: 630,  y: 356, w: 180, h: 20 }, // P2  hard-to-see (dark zone covers this)
+  // Zone B — early laser section
+  { x: 870,  y: 336, w: 150, h: 20 }, // P3  pre-laser
+  { x: 1060, y: 336, w: 160, h: 20 }, // P4  laser platform (2 lasers above)
+  { x: 1270, y: 318, w: 160, h: 20 }, // P5  post-laser landing
+  // Zone C — spikes + enemy A
+  { x: 1490, y: 300, w: 200, h: 20 }, // P6  spike platform (3 spikes)
+  { x: 1760, y: 282, w: 190, h: 20 }, // P7  enemy A patrol
+  // Zone D — MP1 gap + dark zone + enemy B
+  { x: 2010, y: 264, w: 160, h: 20 }, // P8  run-up to gap
+  { x: 2400, y: 248, w: 170, h: 20 }, // P9  landing after MP1
+  { x: 2640, y: 234, w: 180, h: 20 }, // P10 dark zone + enemy B
+  // Zone E — checkpoint + enemy C + MP2 + pickup
+  { x: 2890, y: 220, w: 170, h: 20 }, // P11 checkpoint 1 + enemy C
+  { x: 3180, y: 208, w: 160, h: 20 }, // P12 vision pickup platform
+  // Zone F — massive spike gauntlet
+  { x: 3400, y: 224, w: 420, h: 20 }, // P13 WIDE spike platform (18 spikes)
+  // Zone G — CP2 + enemy D + final lasers + finish
+  { x: 3880, y: 240, w: 170, h: 20 }, // P14 CP2 + enemy D
+  { x: 4060, y: 370, w: 140, h: 50 }, // P15 finish — drops to ground
 ];
 
 const LEVEL3_WALLS = []; // no wall obstacles in Level 3
 
 // Two horizontal moving platforms
 const LEVEL3_MOVING_PLATFORMS = [
-  // MP1: bridges 230px gap between P2 (right: 820) and P3 (left: 1050)
-  // x oscillates 820–1050; origin=935, range=115; w=90
-  { x: 935, y: 342, w: 90, h: 14, speed: 1.3, axis: "x", origin: 935, range: 115, dx: 0, dy: 0 },
-  // MP2: bridges 230px gap between P8 (right: 2520) and P9 (left: 2780)
-  // x oscillates 2520–2780; origin=2650, range=130; w=90 (faster — harder)
-  { x: 2650, y: 230, w: 90, h: 14, speed: 1.7, axis: "x", origin: 2650, range: 130, dx: 0, dy: 0 },
+  // MP1: bridges gap between P8 (right: 2170) and P9 (left: 2400)
+  // x oscillates 2170–2400; origin=2285, range=115; w=90
+  { x: 2285, y: 252, w: 90, h: 14, speed: 1.3, axis: "x", origin: 2285, range: 115, dx: 0, dy: 0 },
+  // MP2: bridges gap between P11 (right: 3060) and P12 (left: 3180)
+  // x oscillates 3060–3180; origin=3120, range=60; w=90 (short gap, fast)
+  { x: 3120, y: 210, w: 90, h: 14, speed: 1.5, axis: "x", origin: 3120, range: 60, dx: 0, dy: 0 },
 ];
 
 const LEVEL3_ENEMIES = [
-  // A — medium on P5 (x:1560, y:295)
-  { x: 1560, y: 265, w: 22, h: 30, speed: 1.25, dir: 1, leftBound: 1560, rightBound: 1738, startX: 1560, startDir: 1, type: 2 },
-  // B — fast on P8 (x:2360, y:244, near-invisible zone)
-  { x: 2360, y: 214, w: 22, h: 30, speed: 1.65, dir: 1, leftBound: 2360, rightBound: 2516, startX: 2360, startDir: 1, type: 1 },
-  // C — medium on P11 (x:3552, y:228)
-  { x: 3552, y: 198, w: 22, h: 30, speed: 1.20, dir: 1, leftBound: 3552, rightBound: 3710, startX: 3552, startDir: 1, type: 2 },
-  // D — slow on P12 (x:3800, y:244), last guard before finish
-  { x: 3800, y: 214, w: 22, h: 30, speed: 0.95, dir: 1, leftBound: 3800, rightBound: 3948, startX: 3800, startDir: 1, type: 1 },
+  // A — medium on P7 (x:1760, y:282)
+  { x: 1760, y: 252, w: 22, h: 30, speed: 1.25, dir: 1, leftBound: 1760, rightBound: 1928, startX: 1760, startDir: 1, type: 1 },
+  // B — fast on P10 (x:2640, y:234, dark zone)
+  { x: 2640, y: 204, w: 22, h: 30, speed: 1.55, dir: 1, leftBound: 2640, rightBound: 2798, startX: 2640, startDir: 1, type: 2 },
+  // C — medium on P11 (x:2890, y:220)
+  { x: 2890, y: 190, w: 22, h: 30, speed: 1.20, dir: 1, leftBound: 2890, rightBound: 3038, startX: 2890, startDir: 1, type: 1 },
+  // D — slow on P14 (x:3880, y:240), last guard
+  { x: 3880, y: 210, w: 22, h: 30, speed: 0.95, dir: 1, leftBound: 3880, rightBound: 4028, startX: 3880, startDir: 1, type: 2 },
 ];
 
-// Zone B: 7 spikes across wide P4 (x:1280, y:316 → spike y:302)
-// Zone D: 5 spikes hidden on laser platform P10 (x:3010, y:214 → spike y:200), interspersed with lasers
+// Zone C: 3 spikes on P6 (x:1490, y:300 → spike y:286)
+// Zone F: 18 spikes across wide P13 (x:3400, y:224 → spike y:210) — massive gauntlet
 const LEVEL3_SPIKES = [
-  // Wide spike gauntlet — P4
-  { x: 1298, y: 302, w: 16, h: 14 },
-  { x: 1316, y: 302, w: 16, h: 14 },
-  { x: 1334, y: 302, w: 16, h: 14 },
-  { x: 1352, y: 302, w: 16, h: 14 },
-  { x: 1370, y: 302, w: 16, h: 14 },
-  { x: 1388, y: 302, w: 16, h: 14 },
-  { x: 1406, y: 302, w: 16, h: 14 },
-  // Hidden spikes on laser platform — P10
-  { x: 3050, y: 200, w: 16, h: 14 },
-  { x: 3200, y: 200, w: 16, h: 14 },
-  { x: 3380, y: 200, w: 16, h: 14 },
-  { x: 3450, y: 200, w: 16, h: 14 },
-  { x: 3490, y: 200, w: 16, h: 14 },
+  // Zone C — spike platform P6
+  { x: 1520, y: 286, w: 16, h: 14 },
+  { x: 1548, y: 286, w: 16, h: 14 },
+  { x: 1576, y: 286, w: 16, h: 14 },
+  // Zone F — MASSIVE spike gauntlet on P13 (18 spikes, 20px spacing)
+  { x: 3410, y: 210, w: 16, h: 14 },
+  { x: 3430, y: 210, w: 16, h: 14 },
+  { x: 3450, y: 210, w: 16, h: 14 },
+  { x: 3470, y: 210, w: 16, h: 14 },
+  { x: 3490, y: 210, w: 16, h: 14 },
+  { x: 3510, y: 210, w: 16, h: 14 },
+  { x: 3530, y: 210, w: 16, h: 14 },
+  { x: 3550, y: 210, w: 16, h: 14 },
+  { x: 3570, y: 210, w: 16, h: 14 },
+  { x: 3590, y: 210, w: 16, h: 14 },
+  { x: 3610, y: 210, w: 16, h: 14 },
+  { x: 3630, y: 210, w: 16, h: 14 },
+  { x: 3650, y: 210, w: 16, h: 14 },
+  { x: 3670, y: 210, w: 16, h: 14 },
+  { x: 3690, y: 210, w: 16, h: 14 },
+  { x: 3710, y: 210, w: 16, h: 14 },
+  { x: 3730, y: 210, w: 16, h: 14 },
+  { x: 3750, y: 210, w: 16, h: 14 },
 ];
 
-// Four lasers above P10 (platform y=214 → laser y=159); phases staggered, always one on
+// Zone B: 2 early lasers above P4 (platform y=336 → laser y=281); flickering, staggered
+// Zone G: 2 final lasers near goal
 const LEVEL3_LASERS = [
-  { x: 3030, y: 159, w: 100, h: 4, phase: 0   },
-  { x: 3155, y: 159, w: 100, h: 4, phase: 45  },
-  { x: 3350, y: 159, w: 100, h: 4, phase: 90  },
-  { x: 3420, y: 159, w: 100, h: 4, phase: 135 },
+  // Early lasers — Zone B
+  { x: 1070, y: 281, w: 120, h: 4, phase: 0  },
+  { x: 1070, y: 300, w: 120, h: 4, phase: 90 },
+  // Final lasers — Zone G (above P14, y=240 → laser y=185)
+  { x: 3890, y: 185, w: 140, h: 4, phase: 30  },
+  { x: 3890, y: 205, w: 140, h: 4, phase: 120 },
 ];
 
-// Goal centred on finish P13 (x:4020, y:370, w:160)
-const LEVEL3_GOAL = { x: 4078, y: 318, w: 36, h: 52 };
+// Goal centred on finish P15 (x:4060, y:370, w:140)
+const LEVEL3_GOAL = { x: 4108, y: 318, w: 36, h: 52 };
 
-// CP1 on P7 (x:2080, y:260, w:170); CP2 on P11 (x:3552, y:228, w:180)
+// CP1 on P11 (x:2890, y:220, w:170); CP2 on P14 (x:3880, y:240, w:170)
 const LEVEL3_CHECKPOINTS = [
-  { x: 2156, y: 220, w: 18, h: 40 },
-  { x: 3632, y: 188, w: 18, h: 40 },
+  { x: 2966, y: 180, w: 18, h: 40 },
+  { x: 3956, y: 200, w: 18, h: 40 },
 ];
 
-// Vision pickup mid-laser platform — reward for scanning in the hardest zone
-const LEVEL3_VISION_PICKUP = { x: 3240, y: 198, w: 16, h: 16 };
+// Vision pickup on P12 — before the massive spike gauntlet
+const LEVEL3_VISION_PICKUP = { x: 3252, y: 192, w: 16, h: 16 };
 
 // Glare and dark zones for Level 3
 const LEVEL3_GLARE_ZONES = [
-  { x: 1540, w: 280, intensity: 3.8 },  // Zone B — enemy A section
-  { x: 2060, w: 400, intensity: 7.0 },  // Zone C — near-invisible platforms
-  { x: 2980, w: 680, intensity: 10.5 }, // Zone D — laser gauntlet
+  { x: 1000, w: 280, intensity: 3.5 },  // Zone B — early laser glare
+  { x: 2580, w: 400, intensity: 7.0 },  // Zone D — dark zone glare
+  { x: 3380, w: 450, intensity: 9.5 },  // Zone F — spike gauntlet
 ];
 const LEVEL3_DARK_ZONES = [
-  { x: 1100, w: 480, intensity: 0.92 }, // Zone B — spike platform + enemy A
-  { x: 1840, w: 540, intensity: 0.97 }, // Zone C — near-invisible platforms
-  { x: 2760, w: 460, intensity: 0.95 }, // Zone D — laser approach
+  { x: 560,  w: 280, intensity: 0.93 }, // Zone A — hard-to-see platform
+  { x: 2560, w: 380, intensity: 0.97 }, // Zone D — dark zone + enemy B
+  { x: 3380, w: 440, intensity: 0.92 }, // Zone F — spike gauntlet darkness
 ];
 
 const VISION_BOOST_FRAMES = 300;
@@ -349,6 +367,7 @@ let jamieJump    = [];
 let spikeImgs    = []; // [Spike_1_Sprite, Spike_2_Sprite] — 2 variants for visual variety
 let enemy1Imgs   = { idle: null, walk: null };          // type-1 enemy (spider)
 let enemy2Imgs   = { idle: null, walk: null, attack: null }; // type-2 enemy (humanoid guard)
+let checkpointImg = null;                                // checkpoint spritesheet
 let bgMusic;
 let sfxJump, sfxDoubleJump, sfxFocus, sfxDeath, sfxGoal;
 
@@ -366,6 +385,7 @@ function preload() {
   enemy2Imgs.idle   = loadImage("assets/images/Enemies/Enemy_2/Enemy-2-Idle.png");
   enemy2Imgs.walk   = loadImage("assets/images/Enemies/Enemy_2/Enemy-2-Walking.png");
   enemy2Imgs.attack = loadImage("assets/images/Enemies/Enemy_2/Enemy-2-Attack.png");
+  checkpointImg     = loadImage("assets/images/Checkpoint/Checkpoint.png");
   bgMusic       = loadSound("assets/sounds/nikitakondrashev-cyberpunk-437545.mp3");
   sfxJump       = loadSound("assets/sounds/Jump.mp3");
   sfxDoubleJump = loadSound("assets/sounds/Dash.mp3");
@@ -471,7 +491,7 @@ function initLevel() {
     gd = LEVEL3_GOAL;      cpd = LEVEL3_CHECKPOINTS;      vpd = LEVEL3_VISION_PICKUP;
     GLARE_ZONES = LEVEL3_GLARE_ZONES;
     DARK_ZONES  = LEVEL3_DARK_ZONES;
-    darkWallTriggerX = 2900; // fires as player enters laser approach zone
+    darkWallTriggerX = 3400; // fires as player enters spike gauntlet zone
   } else if (currentLevel === 2) {
     pd = LEVEL2_PLATFORMS; mpd = LEVEL2_MOVING_PLATFORMS; wd = LEVEL2_WALLS;
     ed = LEVEL2_ENEMIES;   sd  = LEVEL2_SPIKES;           ld = LEVEL2_LASERS;
@@ -998,9 +1018,9 @@ function updatePlayer() {
       player.vy = 0;
     }
   }
-  // Moving platforms — top-land only, no side-wall blocking
+  // Moving platforms — top-land only, skip if already grounded on static platform
   for (let mp of movingPlatforms) {
-    if (overlaps(player, mp) && player.vy >= 0) {
+    if (!player.onGround && overlaps(player, mp) && player.vy >= 0) {
       player.y = mp.y - player.h; player.onGround = true; player.vy = 0;
     }
   }
@@ -1025,6 +1045,13 @@ function updateMovingPlatforms() {
     if (player.onGround && overlaps(_mpFeet, _mpTop)) {
       player.x += mp.dx;
       player.y += mp.dy;
+      // Prevent MP push from overlapping static platforms
+      for (let p of allPlats) {
+        if (overlaps(player, p)) {
+          if (mp.dx > 0) player.x = p.x - player.w;
+          else if (mp.dx < 0) player.x = p.x + p.w;
+        }
+      }
       break;
     }
   }
@@ -1237,14 +1264,16 @@ function drawGlareZones() {
 
 function drawDarkZones() {
   noStroke();
+  let vf = visionFloor(); // 0 = no boost, 1 = full boost
   for (let dz of DARK_ZONES) {
     let sx = dz.x - camX;
     if (sx + dz.w < 0 || sx > width) continue;
     let fadeW = 60;
-    fill(0, 0, 0, 255 * dz.intensity);
+    let eff = dz.intensity * (1 - vf * 0.6); // reduce by up to 60% when boosted
+    fill(0, 0, 0, 255 * eff);
     rect(sx + fadeW, 0, max(0, dz.w - fadeW * 2), height);
     for (let f = 0; f < fadeW; f += 4) {
-      let a = map(f, 0, fadeW, 0, 255 * dz.intensity);
+      let a = map(f, 0, fadeW, 0, 255 * eff);
       fill(0, 0, 0, a);
       rect(sx + f, 0, 4, height);
       rect(sx + dz.w - f - 4, 0, 4, height);
@@ -1324,7 +1353,7 @@ function drawPlatforms() {
   for (let p of platforms) {
     if (p.x + p.w < vL || p.x > vR) continue;
     let hi = (focusFade > 0 && distToRect(pcx, pcy, p.x, p.y, p.w, p.h) <= FOCUS_RADIUS) ? focusFade : 0;
-    drawPlatformNeon(p, lerp(lerp(0.05, 0.13, visionFloor()), 1.0, hi), hi);
+    drawPlatformNeon(p, lerp(lerp(0.05, 0.55, visionFloor()), 1.0, hi), hi);
   }
   noStroke();
 }
@@ -1333,7 +1362,7 @@ function drawMovingPlatforms() {
   let pcx = player.x + player.w / 2, pcy = player.y + player.h / 2;
   for (let mp of movingPlatforms) {
     let hi = (focusFade > 0 && distToRect(pcx, pcy, mp.x, mp.y, mp.w, mp.h) <= FOCUS_RADIUS) ? focusFade : 0;
-    drawMovingPlatformNeon(mp, lerp(lerp(0.05, 0.13, visionFloor()), 1.0, hi), hi);
+    drawMovingPlatformNeon(mp, lerp(lerp(0.05, 0.55, visionFloor()), 1.0, hi), hi);
   }
   noStroke();
 }
@@ -1452,7 +1481,7 @@ function drawEnemies() {
   for (let e of enemies) {
     if (e.x + e.w < vL || e.x > vR) continue;
     let hi = (focusFade > 0 && distToRect(pcx, pcy, e.x, e.y, e.w, e.h) <= FOCUS_RADIUS) ? focusFade : 0;
-    drawEnemyNeon(e, lerp(lerp(0.04, 0.10, visionFloor()), 1.0, hi), hi);
+    drawEnemyNeon(e, lerp(lerp(0.04, 0.50, visionFloor()), 1.0, hi), hi);
   }
 }
 
@@ -1937,20 +1966,25 @@ function drawCheckpoints() {
     let cp = checkpoints[i];
     if (cp.x + cp.w < vL || cp.x > vR) continue;
     let baseA = cp.activated ? 1.0 : 0.45;
-    let cr = cp.activated ? 0 : 80;
-    let cg = cp.activated ? 255 : 200;
-    let cb = cp.activated ? 240 : 220;
-    noStroke();
-    let outerPulse = cpPulseTimers[i] > 0 ? 60 * (0.5 + 0.5 * sin(frameCount * 0.3)) : 0;
-    fill(cr, cg, cb, (28 + outerPulse) * baseA);
-    rect(cp.x - 3, cp.y - 3, cp.w + 6, cp.h + 6);
-    fill(cr, cg, cb, 180 * baseA);
-    rect(cp.x, cp.y, cp.w, cp.h);
-    fill(cr, cg, cb, (220 + 35 * sin(frameCount * 0.06)) * baseA);
-    rect(cp.x, cp.y, cp.w, 4);
-    stroke(cr, cg, cb, 120 * baseA); strokeWeight(1);
-    line(cp.x + cp.w / 2, cp.y, cp.x + cp.w / 2, cp.y + cp.h);
-    noStroke();
+
+    // Sprite rendering
+    if (checkpointImg && checkpointImg.width > 0) {
+      let frameH = checkpointImg.width;
+      let numF   = max(1, floor(checkpointImg.height / frameH));
+      let frame  = floor(frameCount / 10) % numF; // 160ms at 60fps = 10 frames
+      push();
+      tint(255, 255 * baseA);
+      image(checkpointImg, cp.x, cp.y, cp.w, cp.h, 0, frame * frameH, checkpointImg.width, frameH);
+      noTint();
+      pop();
+    } else {
+      // Fallback geometry
+      noStroke();
+      fill(80, 200, 220, 180 * baseA);
+      rect(cp.x, cp.y, cp.w, cp.h);
+    }
+
+    // Activation pulse ring
     if (cpPulseTimers[i] > 0) {
       let pr = map(cpPulseTimers[i], 45, 0, 0, 60);
       let pa = map(cpPulseTimers[i], 45, 0, 200, 0);
