@@ -123,9 +123,9 @@ const LEVEL_MOVING_PLATFORMS = []; // none in Level 1
 
 const LEVEL_ENEMIES = [
   // Zone B — slow, easy to see (introduces enemy concept)
-  { x: 1710, y: 230, w: 22, h: 30, speed: 0.90, dir: 1, leftBound: 1710, rightBound: 1874, startX: 1710, startDir: 1 },
+  { x: 1710, y: 230, w: 22, h: 30, speed: 0.90, dir: 1, leftBound: 1710, rightBound: 1874, startX: 1710, startDir: 1, type: 1 },
   // Zone C — medium speed, nearly invisible without scan
-  { x: 2234, y: 188, w: 22, h: 30, speed: 1.20, dir: 1, leftBound: 2234, rightBound: 2374, startX: 2234, startDir: 1 },
+  { x: 2234, y: 188, w: 22, h: 30, speed: 1.20, dir: 1, leftBound: 2234, rightBound: 2374, startX: 2234, startDir: 1, type: 2 },
 ];
 
 // Spikes are fully static — referenced directly, never modified
@@ -201,13 +201,13 @@ const LEVEL2_MOVING_PLATFORMS = [
 
 const LEVEL2_ENEMIES = [
   // A — slow intro on P4 (x:1315, y:348)
-  { x: 1315, y: 318, w: 22, h: 30, speed: 0.85, dir: 1, leftBound: 1315, rightBound: 1503, startX: 1315, startDir: 1 },
+  { x: 1315, y: 318, w: 22, h: 30, speed: 0.85, dir: 1, leftBound: 1315, rightBound: 1503, startX: 1315, startDir: 1, type: 1 },
   // B — medium on P5 (x:1580, y:326)
-  { x: 1580, y: 296, w: 22, h: 30, speed: 1.15, dir: 1, leftBound: 1580, rightBound: 1768, startX: 1580, startDir: 1 },
+  { x: 1580, y: 296, w: 22, h: 30, speed: 1.15, dir: 1, leftBound: 1580, rightBound: 1768, startX: 1580, startDir: 1, type: 1 },
   // C — fast on P6 (x:1990, y:305)
-  { x: 1990, y: 275, w: 22, h: 30, speed: 1.55, dir: 1, leftBound: 1990, rightBound: 2213, startX: 1990, startDir: 1 },
+  { x: 1990, y: 275, w: 22, h: 30, speed: 1.55, dir: 1, leftBound: 1990, rightBound: 2213, startX: 1990, startDir: 1, type: 2 },
   // D — post-checkpoint guard on P8 (x:2695, y:264)
-  { x: 2695, y: 234, w: 22, h: 30, speed: 1.30, dir: 1, leftBound: 2695, rightBound: 2883, startX: 2695, startDir: 1 },
+  { x: 2695, y: 234, w: 22, h: 30, speed: 1.30, dir: 1, leftBound: 2695, rightBound: 2883, startX: 2695, startDir: 1, type: 2 },
 ];
 
 // Two spikes on spike platform P2 (y=358 → spike y=344)
@@ -277,13 +277,13 @@ const LEVEL3_MOVING_PLATFORMS = [
 
 const LEVEL3_ENEMIES = [
   // A — medium on P5 (x:1560, y:295)
-  { x: 1560, y: 265, w: 22, h: 30, speed: 1.25, dir: 1, leftBound: 1560, rightBound: 1738, startX: 1560, startDir: 1 },
+  { x: 1560, y: 265, w: 22, h: 30, speed: 1.25, dir: 1, leftBound: 1560, rightBound: 1738, startX: 1560, startDir: 1, type: 2 },
   // B — fast on P8 (x:2360, y:244, near-invisible zone)
-  { x: 2360, y: 214, w: 22, h: 30, speed: 1.65, dir: 1, leftBound: 2360, rightBound: 2516, startX: 2360, startDir: 1 },
+  { x: 2360, y: 214, w: 22, h: 30, speed: 1.65, dir: 1, leftBound: 2360, rightBound: 2516, startX: 2360, startDir: 1, type: 1 },
   // C — medium on P11 (x:3552, y:228)
-  { x: 3552, y: 198, w: 22, h: 30, speed: 1.20, dir: 1, leftBound: 3552, rightBound: 3710, startX: 3552, startDir: 1 },
+  { x: 3552, y: 198, w: 22, h: 30, speed: 1.20, dir: 1, leftBound: 3552, rightBound: 3710, startX: 3552, startDir: 1, type: 2 },
   // D — slow on P12 (x:3800, y:244), last guard before finish
-  { x: 3800, y: 214, w: 22, h: 30, speed: 0.95, dir: 1, leftBound: 3800, rightBound: 3948, startX: 3800, startDir: 1 },
+  { x: 3800, y: 214, w: 22, h: 30, speed: 0.95, dir: 1, leftBound: 3800, rightBound: 3948, startX: 3800, startDir: 1, type: 1 },
 ];
 
 // Zone B: 7 spikes across wide P4 (x:1280, y:316 → spike y:302)
@@ -347,6 +347,8 @@ let jamieIdle    = [];
 let jamieRun     = [];
 let jamieJump    = [];
 let spikeImgs    = []; // [Spike_1_Sprite, Spike_2_Sprite] — 2 variants for visual variety
+let enemy1Imgs   = { idle: null, walk: null };          // type-1 enemy (spider)
+let enemy2Imgs   = { idle: null, walk: null, attack: null }; // type-2 enemy (humanoid guard)
 let bgMusic;
 let sfxJump, sfxDoubleJump, sfxFocus, sfxDeath, sfxGoal;
 
@@ -359,6 +361,11 @@ function preload() {
   for (let i = 1; i <= 4; i++) jamieRun.push(loadImage("assets/images/JAMIE/RUN/Jamie_RUN_" + i + ".png"));
   for (let i = 1; i <= 5; i++) jamieJump.push(loadImage("assets/images/JAMIE/JUMP/Jamie_JUMP_" + i + ".png"));
   for (let i = 1; i <= 2; i++) spikeImgs.push(loadImage("assets/images/Spikes/Spike_" + i + "_Sprite.png"));
+  enemy1Imgs.idle   = loadImage("assets/images/Enemies/Enemy_1/Enemy-1-Idle.png");
+  enemy1Imgs.walk   = loadImage("assets/images/Enemies/Enemy_1/Enemy-1-Walking.png");
+  enemy2Imgs.idle   = loadImage("assets/images/Enemies/Enemy_2/Enemy-2-Idle.png");
+  enemy2Imgs.walk   = loadImage("assets/images/Enemies/Enemy_2/Enemy-2-Walking.png");
+  enemy2Imgs.attack = loadImage("assets/images/Enemies/Enemy_2/Enemy-2-Attack.png");
   bgMusic       = loadSound("assets/sounds/nikitakondrashev-cyberpunk-437545.mp3");
   sfxJump       = loadSound("assets/sounds/Jump.mp3");
   sfxDoubleJump = loadSound("assets/sounds/Dash.mp3");
@@ -1388,14 +1395,51 @@ function drawPlayer() {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function drawEnemyNeon(e, a, hi) {
-  let ex = e.x, ey = e.y, ew = e.w, eh = e.h; noStroke();
-  fill(255, 70, 20, 60 * a); rect(ex - 3, ey - 3, ew + 6, eh + 6);
-  fill(55, 14, 4, 210 * a); rect(ex, ey, ew, eh);
-  fill(255, 160, 80, 120 * a); rect(ex + 1, ey + 6, ew - 2, 3);
-  stroke(255, 70, 20, 230 * a); strokeWeight(1.5); line(ex, ey, ex + ew, ey);
-  stroke(255, 70, 20, 255 * a); strokeWeight(2.5);  line(ex + 3, ey + 8, ex + ew - 3, ey + 8);
+  let ex = e.x, ey = e.y, ew = e.w, eh = e.h;
+  let pcx = player.x + player.w / 2;
+  let inAttackRange = e.type === 2 && abs(e.x + ew / 2 - pcx) < 90;
+
+  // Pick sprite sheet and per-animation frame speed (game frames per sprite frame)
+  let img, fSpeed;
+  if (e.type === 2) {
+    img    = inAttackRange ? enemy2Imgs.attack : enemy2Imgs.walk;
+    fSpeed = 12; // 200ms × 60fps ÷ 1000 = 12
+    if (!img || img.width === 0) img = enemy2Imgs.idle;
+  } else {
+    img    = enemy1Imgs.walk;
+    fSpeed = 8;  // 130ms × 60fps ÷ 1000 ≈ 8
+    if (!img || img.width === 0) img = enemy1Imgs.idle;
+  }
+
+  if (img && img.width > 0) {
+    let frameH = img.width;                           // square frames — same pattern as Jamie/spikes
+    let numF   = max(1, floor(img.height / frameH));
+    let frame  = floor(frameCount / fSpeed) % numF;
+    push();
+    tint(255, 255 * a);
+    if (e.dir === -1) {
+      // Flip horizontally to face left
+      translate(ex + ew, ey);
+      scale(-1, 1);
+      image(img, 0, 0, ew, eh, 0, frame * frameH, img.width, frameH);
+    } else {
+      image(img, ex, ey, ew, eh, 0, frame * frameH, img.width, frameH);
+    }
+    noTint();
+    pop();
+  } else {
+    // Fallback geometry if sprites not loaded
+    noStroke();
+    fill(255, 70, 20, 60 * a); rect(ex - 3, ey - 3, ew + 6, eh + 6);
+    fill(55, 14, 4, 210 * a); rect(ex, ey, ew, eh);
+    fill(255, 160, 80, 120 * a); rect(ex + 1, ey + 6, ew - 2, 3);
+    stroke(255, 70, 20, 230 * a); strokeWeight(1.5); line(ex, ey, ex + ew, ey);
+    stroke(255, 70, 20, 255 * a); strokeWeight(2.5); line(ex + 3, ey + 8, ex + ew - 3, ey + 8);
+  }
+
   if (hi > 0) {
-    stroke(0, 255, 240, hi * 200); strokeWeight(2); noFill(); rect(ex - 1, ey - 1, ew + 2, eh + 2);
+    noFill(); stroke(0, 255, 240, hi * 200); strokeWeight(2);
+    rect(ex - 1, ey - 1, ew + 2, eh + 2);
   }
   noStroke();
 }
