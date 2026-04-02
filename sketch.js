@@ -98,8 +98,8 @@ const LEVEL_PLATFORMS = [
   { x: 540,  y: 376, w: 200, h: 20 }, // first hop
   { x: 808,  y: 355, w: 256, h: 20 }, // checkpoint 1 — "you can scan" hint here
   // Zone B — double-jump required to surmount wall
-  { x: 1122, y: 333, w: 188, h: 20 }, // approach platform before wall
-  { x: 1412, y: 283, w: 218, h: 20 }, // landing platform past wall
+  { x: 1122, y: 333, w: 165, h: 20 }, // approach platform before wall (slightly shorter)
+  { x: 1396, y: 283, w: 218, h: 20 }, // landing platform past wall (16px closer)
   { x: 1710, y: 260, w: 186, h: 20 }, // enemy A — still well-lit, intro to enemy
   // Zone C — echolocation essential
   { x: 1980, y: 238, w: 168, h: 20 }, // near-invisible platform — vision pickup here
@@ -113,10 +113,10 @@ const LEVEL_PLATFORMS = [
 ];
 
 // Wall obstacle: tall solid barrier requiring double-jump to surmount.
-// Top at y=183; player on approach platform (y=333) single-jump peaks at y≈221 (can't clear),
-// double-jump peaks at y≈171 (clears). Width 42 so player can land on top.
+// Top at y=213; player double-jump peaks at y≈171 (clears by ~42px — comfortable margin).
+// Single jump peaks at y≈221 (still can't clear), so double-jump is still required.
 const LEVEL_WALLS = [
-  { x: 1348, y: 183, w: 42, h: 150 },
+  { x: 1348, y: 213, w: 42, h: 120 },
 ];
 
 const LEVEL_MOVING_PLATFORMS = []; // none in Level 1
