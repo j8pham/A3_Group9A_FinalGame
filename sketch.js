@@ -116,7 +116,7 @@ const LEVEL_MOVING_PLATFORMS = []; // none in Level 1
 
 const LEVEL_ENEMIES = [
   // One enemy on hard-to-see platform in Zone C
-  { x: 2240, y: 320, w: 22, h: 30, speed: 1.0, dir: 1, leftBound: 2240, rightBound: 2388, startX: 2240, startDir: 1, type: 2 },
+  { x: 2240, y: 306, w: 30, h: 44, speed: 1.0, dir: 1, leftBound: 2240, rightBound: 2380, startX: 2240, startDir: 1, type: 2 },
 ];
 
 // Spikes are fully static — referenced directly, never modified
@@ -143,8 +143,8 @@ const LEVEL_LASERS = [];
 const LEVEL_GOAL = { x: 3858, y: 318, w: 36, h: 52 };
 
 const LEVEL_CHECKPOINTS = [
-  { x: 940,  y: 325, w: 18, h: 40 },   // center of P2
-  { x: 2571, y: 300, w: 18, h: 40 },   // center of P8
+  { x: 931,  y: 325, w: 36, h: 40 },   // center of P2
+  { x: 2562, y: 300, w: 36, h: 40 },   // center of P8
 ];
 
 // Vision pickup on P5 after wall — reward for clearing the wall
@@ -180,18 +180,19 @@ const LEVEL2_WALLS = []; // no wall in Level 2
 
 const LEVEL2_MOVING_PLATFORMS = [
   // Single MP bridging gap between P7 (ends 2460) and P8 (starts 2620)
-  { x: 2540, y: 332, w: 90, h: 14, speed: 1.0, axis: "x", origin: 2540, range: 80, dx: 0, dy: 0 },
+  // minX=2460 (left edge at P7), maxX=2530 (right edge=2620 touches P8)
+  { x: 2495, y: 332, w: 90, h: 14, speed: 1.0, axis: "x", origin: 2495, range: 35, minX: 2460, maxX: 2530, dx: 0, dy: 0 },
 ];
 
 const LEVEL2_ENEMIES = [
   // A — slow intro on P3
-  { x: 1050, y: 325, w: 22, h: 30, speed: 0.85, dir: 1, leftBound: 1050, rightBound: 1248, startX: 1050, startDir: 1, type: 1 },
+  { x: 1050, y: 311, w: 30, h: 44, speed: 0.85, dir: 1, leftBound: 1050, rightBound: 1240, startX: 1050, startDir: 1, type: 1 },
   // B — medium on P4
-  { x: 1380, y: 315, w: 22, h: 30, speed: 1.15, dir: 1, leftBound: 1380, rightBound: 1558, startX: 1380, startDir: 1, type: 1 },
+  { x: 1380, y: 301, w: 30, h: 44, speed: 1.15, dir: 1, leftBound: 1380, rightBound: 1550, startX: 1380, startDir: 1, type: 1 },
   // C — faster on P5
-  { x: 1690, y: 305, w: 22, h: 30, speed: 1.40, dir: 1, leftBound: 1690, rightBound: 1888, startX: 1690, startDir: 1, type: 2 },
+  { x: 1690, y: 291, w: 30, h: 44, speed: 1.40, dir: 1, leftBound: 1690, rightBound: 1880, startX: 1690, startDir: 1, type: 2 },
   // D — laser zone guard on P9
-  { x: 2950, y: 320, w: 22, h: 30, speed: 1.20, dir: 1, leftBound: 2880, rightBound: 3458, startX: 2950, startDir: 1, type: 2 },
+  { x: 2950, y: 306, w: 30, h: 44, speed: 1.20, dir: 1, leftBound: 2880, rightBound: 3080, startX: 2950, startDir: 1, type: 2 },
 ];
 
 // Spikes on dark platform P2 + enemy platforms P4/P5
@@ -218,7 +219,7 @@ const LEVEL2_LASERS = [
 const LEVEL2_GOAL = { x: 3638, y: 318, w: 36, h: 52 };
 
 // Checkpoint on P7
-const LEVEL2_CHECKPOINTS = [{ x: 2366, y: 290, w: 18, h: 40 }];
+const LEVEL2_CHECKPOINTS = [{ x: 2357, y: 290, w: 36, h: 40 }];
 
 // Vision pickup in laser zone on P9
 const LEVEL2_VISION_PICKUP = { x: 3400, y: 334, w: 16, h: 16 };
@@ -263,30 +264,34 @@ const LEVEL3_WALLS = []; // no wall obstacles in Level 3
 // Two horizontal moving platforms
 const LEVEL3_MOVING_PLATFORMS = [
   // MP1: bridges gap between P8 (right: 2170) and P9 (left: 2450)
-  // left edge oscillates 2160–2360; right edge 2250–2450 → just reaches P9 at max, no deep overlap
+  // minX=2170 (left edge at P8), maxX=2360 (right edge=2450 touches P9)
   {
-    x: 2260,
+    x: 2265,
     y: 252,
     w: 90,
     h: 14,
     speed: 1.1,
     axis: "x",
-    origin: 2260,
-    range: 100,
+    origin: 2265,
+    range: 95,
+    minX: 2170,
+    maxX: 2360,
     dx: 0,
     dy: 0,
   },
   // MP2: bridges gap between P11 (right: 3060) and P12 (left: 3230)
-  // left edge oscillates 3030–3140; right edge 3120–3230 → just reaches P12 at max
+  // minX=3060 (left edge at P11), maxX=3140 (right edge=3230 touches P12)
   {
-    x: 3085,
+    x: 3100,
     y: 210,
     w: 90,
     h: 14,
     speed: 1.2,
     axis: "x",
-    origin: 3085,
-    range: 55,
+    origin: 3100,
+    range: 40,
+    minX: 3060,
+    maxX: 3140,
     dx: 0,
     dy: 0,
   },
@@ -296,13 +301,13 @@ const LEVEL3_ENEMIES = [
   // A — medium on P7 (x:1760, y:282)
   {
     x: 1760,
-    y: 252,
-    w: 22,
-    h: 30,
+    y: 238,
+    w: 30,
+    h: 44,
     speed: 1.25,
     dir: 1,
     leftBound: 1760,
-    rightBound: 1928,
+    rightBound: 1920,
     startX: 1760,
     startDir: 1,
     type: 1,
@@ -310,13 +315,13 @@ const LEVEL3_ENEMIES = [
   // B — fast on P10 (x:2640, y:234, dark zone)
   {
     x: 2640,
-    y: 204,
-    w: 22,
-    h: 30,
+    y: 190,
+    w: 30,
+    h: 44,
     speed: 1.55,
     dir: 1,
     leftBound: 2640,
-    rightBound: 2798,
+    rightBound: 2790,
     startX: 2640,
     startDir: 1,
     type: 2,
@@ -324,13 +329,13 @@ const LEVEL3_ENEMIES = [
   // C — medium on P11 (x:2890, y:220)
   {
     x: 2890,
-    y: 190,
-    w: 22,
-    h: 30,
+    y: 176,
+    w: 30,
+    h: 44,
     speed: 1.2,
     dir: 1,
     leftBound: 2890,
-    rightBound: 3038,
+    rightBound: 3030,
     startX: 2890,
     startDir: 1,
     type: 1,
@@ -338,13 +343,13 @@ const LEVEL3_ENEMIES = [
   // D — slow on P14 (x:3880, y:240), last guard
   {
     x: 3880,
-    y: 210,
-    w: 22,
-    h: 30,
+    y: 196,
+    w: 30,
+    h: 44,
     speed: 0.95,
     dir: 1,
     leftBound: 3880,
-    rightBound: 4028,
+    rightBound: 4020,
     startX: 3880,
     startDir: 1,
     type: 2,
@@ -393,8 +398,8 @@ const LEVEL3_GOAL = { x: 4108, y: 318, w: 36, h: 52 };
 
 // CP1 on P9 (x:2450, y:248, no enemy); CP2 on end of P13 after spikes (x:3400+350=3750, no enemy)
 const LEVEL3_CHECKPOINTS = [
-  { x: 2535, y: 208, w: 18, h: 40 },  // center of P9 (x:2450, w:170)
-  { x: 3790, y: 184, w: 18, h: 40 },  // end of P13 (x:3400, w:420), after all spikes, before enemy D
+  { x: 2526, y: 208, w: 36, h: 40 },  // center of P9 (x:2450, w:170)
+  { x: 3781, y: 184, w: 36, h: 40 },  // end of P13 (x:3400, w:420), after all spikes, before enemy D
 ];
 
 // Vision pickup on P12 — before the massive spike gauntlet
@@ -1246,7 +1251,7 @@ function drawComingSoon() {
 
 function updateFocus() {
   let fHeld = keyIsDown(70);
-  let canFocus = player.onGround && abs(player.vx) < 0.5 && focusCooldown <= 0;
+  let canFocus = player.onGround && player.vx === 0 && focusCooldown <= 0;
 
   // Cooldown tick
   if (focusCooldown > 0) {
@@ -1371,8 +1376,8 @@ function updateMovingPlatforms() {
     let prevX = mp.x,
       prevY = mp.y;
     let t = frameCount * mp.speed * 0.02;
-    if (mp.axis === "x") mp.x = mp.origin + sin(t) * mp.range;
-    else mp.y = mp.origin + sin(t) * mp.range;
+    if (mp.axis === "x") mp.x = constrain(mp.origin + sin(t) * mp.range, mp.minX, mp.maxX);
+    else mp.y = constrain(mp.origin + sin(t) * mp.range, mp.minY, mp.maxY);
     mp.dx = mp.x - prevX;
     mp.dy = mp.y - prevY;
   }
@@ -2052,7 +2057,7 @@ function drawSpikes() {
       focusFade > 0 && distToRect(pcx, pcy, s.x, s.y, s.w, s.h) <= FOCUS_RADIUS
         ? focusFade
         : 0;
-    let a = lerp(0.04, 1.0, hi);
+    let a = lerp(lerp(0.04, 0.55, visionFloor()), 1.0, hi);
 
     if (spikeImgs.length === 2) {
       // Alternate between Spike_1 and Spike_2 for visual variety; animate at 150ms ≈ 9 frames
@@ -2473,7 +2478,7 @@ function drawFocusPulse() {
 function drawFocusIndicator() {
   let cx = player.x + player.w / 2;
   let cy = player.y + player.h + 12;
-  let canFocus = player.onGround && abs(player.vx) < 0.5 && focusCooldown <= 0;
+  let canFocus = player.onGround && player.vx === 0 && focusCooldown <= 0;
   noStroke();
   if (focusActive) {
     let pulse = 0.7 + 0.3 * sin(frameCount * 0.15);
@@ -2517,8 +2522,7 @@ function drawLevel1Instructions() {
     [  60, 180, "← → MOVE"],
     [ 200, 200, "W / ↑  JUMP"],
     [ 700, 250, "DOUBLE TAP  ↑  TO DOUBLE JUMP"],
-    [1400, 220, "DOUBLE JUMP to clear the wall!"],
-    [1760, 260, "SPACE — ECHOLOCATION  (scan your surroundings)"],
+    [1760, 260, "F — ECHOLOCATION  (scan your surroundings)"],
     [2700, 300, "Watch out for SPIKES!"],
   ];
 
@@ -2786,7 +2790,7 @@ function drawCheckpoints() {
   for (let i = 0; i < checkpoints.length; i++) {
     let cp = checkpoints[i];
     if (cp.x + cp.w < vL || cp.x > vR) continue;
-    let baseA = cp.activated ? 1.0 : 0.45;
+    let baseA = cp.activated ? 1.0 : 0.7;
 
     // Sprite rendering
     if (checkpointImg && checkpointImg.width > 0) {
@@ -2822,15 +2826,15 @@ function drawCheckpoints() {
       noFill();
       // Ring 1 (first to expand)
       let r1 = map(t, 90, 0, 0, 80);
-      let a1 = map(t, 90, 50, 220, 0);
+      let a1 = map(t, 90, 50, 255, 0);
       if (a1 > 0) { stroke(0, 255, 240, a1); strokeWeight(2); ellipse(cx, cy, r1 * 2, r1 * 2); }
       // Ring 2 (delayed)
       let r2 = map(t, 75, 0, 0, 80);
-      let a2 = map(t, 75, 30, 200, 0);
+      let a2 = map(t, 75, 30, 255, 0);
       if (t < 75 && a2 > 0) { stroke(0, 200, 255, a2); strokeWeight(1.5); ellipse(cx, cy, r2 * 2, r2 * 2); }
       // Ring 3 (most delayed)
       let r3 = map(t, 55, 0, 0, 60);
-      let a3 = map(t, 55, 10, 160, 0);
+      let a3 = map(t, 55, 10, 220, 0);
       if (t < 55 && a3 > 0) { stroke(160, 80, 255, a3); strokeWeight(1); ellipse(cx, cy, r3 * 2, r3 * 2); }
       noStroke();
       // Floating "+SAVED" text
