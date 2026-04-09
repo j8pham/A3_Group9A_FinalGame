@@ -224,197 +224,154 @@ const LEVEL2_CHECKPOINTS = [{ x: 2357, y: 290, w: 36, h: 40 }];
 // Vision pickup in laser zone on P9
 const LEVEL2_VISION_PICKUP = { x: 3400, y: 334, w: 16, h: 16 };
 
-// ── LEVEL 3 DATA — "The Infiltration" ────────────────────────────────────────
-//  Zone A (0–600):     Start + dark platform (forces focus).
-//  Zone B (600–1200):  Early lasers — "one path is right", flickering.
-//  Zone C (1200–1800):  Spikes + enemy A.
-//  Zone D (1800–2600):  Moving platform gap + dark zone + enemy B.
-//  Zone E (2600–3200):  Checkpoint + enemy C + MP2 + vision pickup.
-//  Zone F (3200–3800):  MASSIVE spike gauntlet (signature challenge).
-//  Zone G (3800–4200):  CP2 + enemy D + final lasers + goal.
+// ── LEVEL 3 DATA — "The Infiltration" (Redesigned) ───────────────────────────
+//  W-shape height profile: two full ascent/descent cycles for verticality.
+//  Zone A (0–900):    Start + dark platform, gradual ascent.
+//  Zone B (900–1360): Laser section — 3 spikes + 2 horizontal lasers.
+//  Zone C (1360–2110): PEAK1 (vision pickup) → descent → enemy A.
+//  Zone D (2110–2720): VALLEY — CP1 + MP1 bridge, 2nd ascent begins.
+//  Zone E (2720–3340): PEAK2 — enemy B, enemy C.
+//  Zone F (3340–3810): Descent via MP2 — 4+4 spikes.
+//  Zone G (3810–4200): CP2 + enemy D + lasers + 4 spikes + goal.
 
 const LEVEL3_PLATFORMS = [
-  // Zone A — start + dark platform
-  { x: 0, y: 400, w: 340, h: 50 }, // P0  start ground
-  { x: 420, y: 376, w: 160, h: 20 }, // P1  first hop
-  { x: 630, y: 356, w: 180, h: 20 }, // P2  hard-to-see (dark zone covers this)
-  // Zone B — early laser section
-  { x: 870, y: 336, w: 150, h: 20 }, // P3  pre-laser
-  { x: 1060, y: 336, w: 160, h: 20 }, // P4  laser platform (2 lasers above)
-  { x: 1270, y: 318, w: 160, h: 20 }, // P5  post-laser landing
-  // Zone C — spikes + enemy A
-  { x: 1490, y: 300, w: 200, h: 20 }, // P6  spike platform (3 spikes)
-  { x: 1760, y: 282, w: 190, h: 20 }, // P7  enemy A patrol
-  // Zone D — MP1 gap + dark zone + enemy B
-  { x: 2010, y: 264, w: 160, h: 20 }, // P8  run-up to gap
-  { x: 2450, y: 248, w: 170, h: 20 }, // P9  landing after MP1
-  { x: 2640, y: 234, w: 180, h: 20 }, // P10 dark zone + enemy B
-  // Zone E — checkpoint + enemy C + MP2 + pickup
-  { x: 2890, y: 220, w: 170, h: 20 }, // P11 checkpoint 1 + enemy C
-  { x: 3230, y: 208, w: 160, h: 20 }, // P12 vision pickup platform
-  // Zone F — massive spike gauntlet
-  { x: 3400, y: 224, w: 420, h: 20 }, // P13 WIDE spike platform (18 spikes)
-  // Zone G — CP2 + enemy D + final lasers + finish
-  { x: 3880, y: 240, w: 170, h: 20 }, // P14 CP2 + enemy D
-  { x: 4060, y: 370, w: 140, h: 50 }, // P15 finish — drops to ground
+  // Zone A — start + dark platform, gradual ascent
+  { x:    0, y: 410, w: 340, h: 50 }, // P0  start ground
+  { x:  420, y: 390, w: 160, h: 20 }, // P1  first hop (+20)
+  { x:  650, y: 365, w: 180, h: 20 }, // P2  dark platform (+25)
+  // Zone B — pre-laser + laser platform
+  { x:  900, y: 340, w: 150, h: 20 }, // P3  3 spikes right side (+25)
+  { x: 1120, y: 310, w: 160, h: 20 }, // P4  2 horizontal lasers (+30)
+  // Zone C — PEAK1 then descent
+  { x: 1360, y: 280, w: 170, h: 20 }, // P5  PEAK1 — vision pickup (+30)
+  { x: 1620, y: 310, w: 160, h: 20 }, // P6  3 spikes (−30)
+  { x: 1860, y: 345, w: 180, h: 20 }, // P7  enemy A (−35)
+  // Zone D — VALLEY + CP1 + MP1 bridge
+  { x: 2110, y: 380, w: 170, h: 20 }, // P8  valley — CP1 here (−35)
+  { x: 2470, y: 350, w: 170, h: 20 }, // P9  MP1 landing (+30)
+  // Zone E — 2nd ascent
+  { x: 2720, y: 320, w: 180, h: 20 }, // P10 enemy B (+30)
+  { x: 2990, y: 285, w: 160, h: 20 }, // P11 PEAK2 — enemy C (+35)
+  // Zone F — descent via MP2
+  { x: 3340, y: 310, w: 160, h: 20 }, // P12 MP2 landing — 4 spikes (−25)
+  { x: 3580, y: 345, w: 150, h: 20 }, // P13 4 spikes (−35)
+  // Zone G — finale
+  { x: 3810, y: 375, w: 190, h: 20 }, // P14 CP2 + enemy D + lasers + 4 spikes (−30)
+  { x: 4060, y: 375, w: 140, h: 50 }, // P15 FINISH (level, 60px gap)
 ];
 
 const LEVEL3_WALLS = []; // no wall obstacles in Level 3
 
-// Two horizontal moving platforms
+// Two horizontal moving platforms (range=50, 45-frame boarding window — relaxed timing)
 const LEVEL3_MOVING_PLATFORMS = [
-  // MP1: bridges gap between P8 (right: 2170) and P9 (left: 2450)
-  // minX=2170 (left edge at P8), maxX=2360 (right edge=2450 touches P9)
+  // MP1: P8 right=2280 → P9 left=2470. Gap=190px. At minX: left=P8 right. At maxX: right=P9 left.
   {
-    x: 2265,
-    y: 252,
-    w: 90,
-    h: 14,
-    speed: 1.1,
-    axis: "x",
-    origin: 2265,
-    range: 95,
-    minX: 2170,
-    maxX: 2360,
-    dx: 0,
-    dy: 0,
+    x: 2330, y: 366, w: 90, h: 14,
+    speed: 1.1, axis: "x",
+    origin: 2330, range: 50,
+    minX: 2280, maxX: 2380,
+    dx: 0, dy: 0,
   },
-  // MP2: bridges gap between P11 (right: 3060) and P12 (left: 3230)
-  // minX=3060 (left edge at P11), maxX=3140 (right edge=3230 touches P12)
+  // MP2: P11 right=3150 → P12 left=3340. Gap=190px. At minX: left=P11 right. At maxX: right=P12 left.
   {
-    x: 3100,
-    y: 210,
-    w: 90,
-    h: 14,
-    speed: 1.2,
-    axis: "x",
-    origin: 3100,
-    range: 40,
-    minX: 3060,
-    maxX: 3140,
-    dx: 0,
-    dy: 0,
+    x: 3200, y: 287, w: 90, h: 14,
+    speed: 1.2, axis: "x",
+    origin: 3200, range: 50,
+    minX: 3150, maxX: 3250,
+    dx: 0, dy: 0,
   },
 ];
 
 const LEVEL3_ENEMIES = [
-  // A — medium on P7 (x:1760, y:282)
+  // A — medium, on P7 (y=345). Type 1. Zone C descent.
   {
-    x: 1760,
-    y: 238,
-    w: 30,
-    h: 44,
-    speed: 1.25,
-    dir: 1,
-    leftBound: 1760,
-    rightBound: 1920,
-    startX: 1760,
-    startDir: 1,
-    type: 1,
+    x: 1860, y: 301, w: 30, h: 44,
+    speed: 1.25, dir: 1,
+    leftBound: 1860, rightBound: 2010,
+    startX: 1860, startDir: 1, type: 1,
   },
-  // B — fast on P10 (x:2640, y:234, dark zone)
+  // B — fast, on P10 (y=320). Type 2. Zone E 2nd ascent.
   {
-    x: 2640,
-    y: 190,
-    w: 30,
-    h: 44,
-    speed: 1.55,
-    dir: 1,
-    leftBound: 2640,
-    rightBound: 2790,
-    startX: 2640,
-    startDir: 1,
-    type: 2,
+    x: 2720, y: 276, w: 30, h: 44,
+    speed: 1.55, dir: 1,
+    leftBound: 2720, rightBound: 2870,
+    startX: 2720, startDir: 1, type: 2,
   },
-  // C — medium on P11 (x:2890, y:220)
+  // C — medium, on P11 (y=285). Type 1. PEAK2 gatekeeper.
   {
-    x: 2890,
-    y: 176,
-    w: 30,
-    h: 44,
-    speed: 1.2,
-    dir: 1,
-    leftBound: 2890,
-    rightBound: 3030,
-    startX: 2890,
-    startDir: 1,
-    type: 1,
+    x: 2990, y: 241, w: 30, h: 44,
+    speed: 1.20, dir: 1,
+    leftBound: 2990, rightBound: 3120,
+    startX: 2990, startDir: 1, type: 1,
   },
-  // D — slow on P14 (x:3880, y:240), last guard
+  // D — slow guard, on P14 (y=375). Type 2. Stays left of lasers.
   {
-    x: 3880,
-    y: 196,
-    w: 30,
-    h: 44,
-    speed: 0.95,
-    dir: 1,
-    leftBound: 3880,
-    rightBound: 4020,
-    startX: 3880,
-    startDir: 1,
-    type: 2,
+    x: 3810, y: 331, w: 30, h: 44,
+    speed: 0.95, dir: 1,
+    leftBound: 3810, rightBound: 3860,
+    startX: 3810, startDir: 1, type: 2,
   },
 ];
 
-// Zone C: 3 spikes on P6 (x:1490, y:300 → spike y:286)
-// Zone F: 18 spikes across wide P13 (x:3400, y:224 → spike y:210) — massive gauntlet
+// 18 spikes total — max 4 consecutive per group (old level had 16 in a row)
 const LEVEL3_SPIKES = [
-  // Zone C — spike platform P6
-  { x: 1520, y: 286, w: 16, h: 14 },
-  { x: 1548, y: 286, w: 16, h: 14 },
-  { x: 1576, y: 286, w: 16, h: 14 },
-  // Zone F — MASSIVE spike gauntlet on P13 (16 spikes, 20px spacing)
-  { x: 3450, y: 210, w: 16, h: 14 },
-  { x: 3470, y: 210, w: 16, h: 14 },
-  { x: 3490, y: 210, w: 16, h: 14 },
-  { x: 3510, y: 210, w: 16, h: 14 },
-  { x: 3530, y: 210, w: 16, h: 14 },
-  { x: 3550, y: 210, w: 16, h: 14 },
-  { x: 3570, y: 210, w: 16, h: 14 },
-  { x: 3590, y: 210, w: 16, h: 14 },
-  { x: 3610, y: 210, w: 16, h: 14 },
-  { x: 3630, y: 210, w: 16, h: 14 },
-  { x: 3650, y: 210, w: 16, h: 14 },
-  { x: 3670, y: 210, w: 16, h: 14 },
-  { x: 3690, y: 210, w: 16, h: 14 },
-  { x: 3710, y: 210, w: 16, h: 14 },
-  { x: 3730, y: 210, w: 16, h: 14 },
-  { x: 3750, y: 210, w: 16, h: 14 },
+  // P3 right side (platform y=340, spike_y=326) — 3 spikes
+  { x:  968, y: 326, w: 16, h: 14 },
+  { x:  986, y: 326, w: 16, h: 14 },
+  { x: 1004, y: 326, w: 16, h: 14 },
+  // P6 center (platform y=310, spike_y=296) — 3 spikes
+  { x: 1680, y: 296, w: 16, h: 14 },
+  { x: 1698, y: 296, w: 16, h: 14 },
+  { x: 1716, y: 296, w: 16, h: 14 },
+  // P12 right side (platform y=310, spike_y=296) — 4 spikes
+  { x: 3430, y: 296, w: 16, h: 14 },
+  { x: 3448, y: 296, w: 16, h: 14 },
+  { x: 3466, y: 296, w: 16, h: 14 },
+  { x: 3484, y: 296, w: 16, h: 14 },
+  // P13 center (platform y=345, spike_y=331) — 4 spikes
+  { x: 3618, y: 331, w: 16, h: 14 },
+  { x: 3636, y: 331, w: 16, h: 14 },
+  { x: 3654, y: 331, w: 16, h: 14 },
+  { x: 3672, y: 331, w: 16, h: 14 },
+  // P14 right zone (platform y=375, spike_y=361) — 4 spikes, after lasers
+  { x: 3925, y: 361, w: 16, h: 14 },
+  { x: 3943, y: 361, w: 16, h: 14 },
+  { x: 3961, y: 361, w: 16, h: 14 },
+  { x: 3979, y: 361, w: 16, h: 14 },
 ];
 
-// Zone B: 2 early lasers above P4 (platform y=336 → laser y=281); flickering, staggered
-// Zone G: 2 final lasers near goal
+// Zone B: 2 lasers above P4 (y=310, player body y=270–310 when standing — both lasers in body range)
+// Zone G: 2 lasers on P14 between CP2 right (x=3862) and spikes (x=3925)
 const LEVEL3_LASERS = [
-  // Early lasers — Zone B
-  { x: 1070, y: 281, w: 120, h: 4, phase: 0 },
-  { x: 1070, y: 300, w: 120, h: 4, phase: 90 },
-  // Final lasers — Zone G (above P14, y=240 → laser y=185)
-  { x: 3890, y: 185, w: 140, h: 4, phase: 30 },
-  { x: 3890, y: 205, w: 140, h: 4, phase: 120 },
+  { x: 1130, y: 278, w: 100, h: 4, phase:   0 },
+  { x: 1130, y: 293, w: 100, h: 4, phase:  90 },
+  { x: 3867, y: 343, w:  50, h: 4, phase:  30 },
+  { x: 3867, y: 358, w:  50, h: 4, phase: 120 },
 ];
 
-// Goal centred on finish P15 (x:4060, y:370, w:140)
-const LEVEL3_GOAL = { x: 4108, y: 318, w: 36, h: 52 };
+// Goal centred on P15 (x:4060, w:140 → center 4130, goal x=4112)
+const LEVEL3_GOAL = { x: 4112, y: 323, w: 36, h: 52 };
 
-// CP1 on P9 (x:2450, y:248, no enemy); CP2 on end of P13 after spikes (x:3400+350=3750, no enemy)
+// CP1 in safe valley P8; CP2 left of P14 — BEFORE lasers (x=3867) and spikes (x=3925)
 const LEVEL3_CHECKPOINTS = [
-  { x: 2526, y: 208, w: 36, h: 40 },  // center of P9 (x:2450, w:170)
-  { x: 3781, y: 184, w: 36, h: 40 },  // end of P13 (x:3400, w:420), after all spikes, before enemy D
+  { x: 2177, y: 340, w: 36, h: 40 },  // center of P8 (valley, no hazards)
+  { x: 3826, y: 335, w: 36, h: 40 },  // left of P14 — right edge 3862, lasers at 3867
 ];
 
-// Vision pickup on P12 — before the massive spike gauntlet
-const LEVEL3_VISION_PICKUP = { x: 3302, y: 192, w: 16, h: 16 };
+// Vision pickup at PEAK1 (P5, y=280) — player scouts the descent ahead
+const LEVEL3_VISION_PICKUP = { x: 1437, y: 264, w: 16, h: 16 };
 
 // Glare and dark zones for Level 3
 const LEVEL3_GLARE_ZONES = [
-  { x: 1000, w: 280, intensity: 3.5 }, // Zone B — early laser glare
-  { x: 2580, w: 400, intensity: 7.0 }, // Zone D — dark zone glare
-  { x: 3380, w: 450, intensity: 9.5 }, // Zone F — spike gauntlet
+  { x:  570, w: 320, intensity: 4.5 }, // Zone A — P2 hard-to-see
+  { x: 1050, w: 320, intensity: 3.5 }, // Zone B — laser approach
+  { x: 2380, w: 300, intensity: 5.5 }, // Zone D — MP1 gap
+  { x: 3540, w: 320, intensity: 7.0 }, // Zone G — gauntlet
 ];
 const LEVEL3_DARK_ZONES = [
-  { x: 560, w: 280, intensity: 0.93 }, // Zone A — hard-to-see platform
-  { x: 2560, w: 380, intensity: 0.97 }, // Zone D — dark zone + enemy B
-  { x: 3380, w: 440, intensity: 0.92 }, // Zone F — spike gauntlet darkness
+  { x:  580, w: 300, intensity: 0.93 }, // Zone A — P2 visibility reduction
+  { x: 2350, w: 280, intensity: 0.95 }, // Zone D — MP1 gap (echolocation use case)
+  { x: 3520, w: 350, intensity: 0.92 }, // Zone G — final gauntlet darkness
 ];
 
 const VISION_BOOST_FRAMES = 300;
@@ -581,7 +538,7 @@ function initLevel() {
     vpd = LEVEL3_VISION_PICKUP;
     GLARE_ZONES = LEVEL3_GLARE_ZONES;
     DARK_ZONES = LEVEL3_DARK_ZONES;
-    darkWallTriggerX = 3400; // fires as player enters spike gauntlet zone
+    darkWallTriggerX = 3900; // fires after CP2 right edge (3862) — guarantees CP2 is activated first
   } else if (currentLevel === 2) {
     pd = LEVEL2_PLATFORMS;
     mpd = LEVEL2_MOVING_PLATFORMS;
